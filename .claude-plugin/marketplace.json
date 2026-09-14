@@ -11,17 +11,33 @@
       "name": "vibeview",
       "source": "./",
       "description": "Verify a React Native change on a live cloud device: upload the build, start a session, drive the UI by ref, read logs and screenshots, and hand off to a human when only a human can act.",
-      "version": "0.20.1",
+      "version": "0.20.2",
       "homepage": "https://vibeview.io/docs/agent-control",
       "repository": "https://github.com/vibeview/skills",
       "license": "MIT",
-      "keywords": ["mobile", "react-native", "expo", "ios", "android", "tvos", "android-tv", "simulator", "emulator", "testing", "mcp"],
+      "keywords": [
+        "mobile",
+        "react-native",
+        "expo",
+        "ios",
+        "android",
+        "tvos",
+        "android-tv",
+        "simulator",
+        "emulator",
+        "testing",
+        "mcp"
+      ],
       "category": "testing",
-      "skills": ["./skills/"],
+      "skills": [
+        "./skills/"
+      ],
       "mcpServers": {
         "vibeview": {
           "command": "vibeview",
-          "args": ["mcp"]
+          "args": [
+            "mcp"
+          ]
         }
       }
     }

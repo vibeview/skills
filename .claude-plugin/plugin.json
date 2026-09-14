@@ -1,7 +1,7 @@
 {
   "name": "vibeview",
   "description": "Drive live iOS, Android, Apple TV and Android TV devices in the cloud from a coding agent: install a build, tap through it, read the UI tree and logs, take screenshots, verify the change.",
-  "version": "0.20.1",
+  "version": "0.20.2",
   "author": {
     "name": "VibeView",
     "email": "support@vibeview.io",
@@ -10,5 +10,17 @@
   "homepage": "https://vibeview.io/docs/agent-control",
   "repository": "https://github.com/vibeview/skills",
   "license": "MIT",
-  "keywords": ["mobile", "react-native", "expo", "ios", "android", "tvos", "android-tv", "simulator", "emulator", "testing", "mcp"]
+  "keywords": [
+    "mobile",
+    "react-native",
+    "expo",
+    "ios",
+    "android",
+    "tvos",
+    "android-tv",
+    "simulator",
+    "emulator",
+    "testing",
+    "mcp"
+  ]
 }
