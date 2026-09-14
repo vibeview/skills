@@ -31,7 +31,7 @@ npx skills add vibeview/skills
 **Claude Code, from the CLI you already installed** (copies the skill into `~/.claude/skills/` and offers to register the MCP server):
 
 ```bash
-vibeview agent install
+vibeview agent-setup
 ```
 
 **Any MCP client**: run `vibeview mcp` over stdio.
@@ -55,6 +55,6 @@ With Claude Code specifically: `claude mcp add vibeview -- vibeview mcp`.
 
 ## Where this comes from
 
-The canonical copy of the skill ships inside the `vibeview` npm package (`vibeview agent install` copies it from there). This repository mirrors it so agents and registries can discover it on GitHub. Versions track the CLI.
+The canonical copy of the skill ships inside the `vibeview` npm package (`vibeview agent-setup` copies it from there). This repository mirrors it so agents and registries can discover it on GitHub. Versions track the CLI.
 
 Issues and questions: support@vibeview.io.
