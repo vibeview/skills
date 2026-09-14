@@ -1,0 +1,29 @@
+{
+  "name": "vibeview",
+  "owner": {
+    "name": "VibeView",
+    "email": "support@vibeview.io",
+    "url": "https://vibeview.io"
+  },
+  "description": "Skills and MCP server for driving live iOS, Android, Apple TV and Android TV devices in the cloud: install a build, tap through it, read the UI tree, take screenshots, and verify a change actually works.",
+  "plugins": [
+    {
+      "name": "vibeview",
+      "source": "./",
+      "description": "Verify a React Native change on a live cloud device: upload the build, start a session, drive the UI by ref, read logs and screenshots, and hand off to a human when only a human can act.",
+      "version": "0.20.1",
+      "homepage": "https://vibeview.io/docs/agent-control",
+      "repository": "https://github.com/vibeview/skills",
+      "license": "MIT",
+      "keywords": ["mobile", "react-native", "expo", "ios", "android", "tvos", "android-tv", "simulator", "emulator", "testing", "mcp"],
+      "category": "testing",
+      "skills": ["./skills/"],
+      "mcpServers": {
+        "vibeview": {
+          "command": "vibeview",
+          "args": ["mcp"]
+        }
+      }
+    }
+  ]
+}
