@@ -1,0 +1,50 @@
+# Publish server.json to the official MCP registry under io.github.vibeview/*.
+#
+# Runs here, in a repository owned by the vibeview organisation, on purpose:
+# the registry grants the org namespace to a GitHub Actions OIDC token whose
+# repository_owner is the org. That needs no personal login, no public
+# membership and no OAuth-app approval, and it is repeatable per release.
+#
+# server.json is mirrored from cli/server.json in the VibeView monorepo; bump
+# its two version fields with each CLI release, and run this after npm serves
+# that version (the registry checks the published package's mcpName).
+name: Publish to MCP Registry
+
+on:
+  push:
+    branches: [main]
+    paths: ['server.json']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Wait for npm to serve the manifest's package version
+        run: |
+          set -euo pipefail
+          ID=$(jq -r '.packages[0].identifier' server.json)
+          VER=$(jq -r '.packages[0].version' server.json)
+          for i in $(seq 1 20); do
+            if npm view "${ID}@${VER}" version >/dev/null 2>&1; then echo "npm has ${ID}@${VER}"; exit 0; fi
+            echo "waiting for ${ID}@${VER} on npm ($i/20)"; sleep 30
+          done
+          echo "::error::${ID}@${VER} is not on npm; publish the CLI first."; exit 1
+
+      - name: Validate
+        run: ./mcp-publisher validate
+
+      - name: Authenticate (OIDC, org namespace)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        run: ./mcp-publisher publish

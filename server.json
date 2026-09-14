@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.vibeview/vibeview",
+  "title": "VibeView",
+  "description": "Drive live iOS, Android, Apple TV and Android TV devices in the cloud to verify app changes.",
+  "repository": {
+    "url": "https://github.com/vibeview/skills",
+    "source": "github"
+  },
+  "websiteUrl": "https://vibeview.io/docs/agent-control",
+  "version": "0.20.3",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "vibeview",
+      "version": "0.20.3",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp",
+          "description": "Start the VibeView MCP server over stdio."
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "VIBEVIEW_API_TOKEN",
+          "description": "A VibeView API token (Settings → API tokens). Alternatively run `vibeview login` once; the server reuses the saved login.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
