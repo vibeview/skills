@@ -137,13 +137,15 @@ it rather than letting it appear unexplained in their `git status`.
   ```
   Use `--press-ms 500` or more for long-press-to-reorder lists, and
   `--velocity 150` for slow, precise slider adjustments.
-- **iOS system alerts** (permission prompts and similar) sit above the app
+- **System alerts** (permission prompts and similar) sit above the app
   and block it. Call `alert get` first to read the message and the exact
   button labels, then act on one:
   ```bash
   vibeview alert get --session <id>
   vibeview alert accept --button "Allow" --session <id>
   ```
+  On Apple TV this also covers the "Open in …?" prompt a deep link raises;
+  the button is answered with the remote.
 - Use `open-url` to jump straight to a deep link instead of navigating by
   hand:
   ```bash
@@ -200,7 +202,7 @@ human-readable text.
 | `scroll` | `<direction>` | Scroll the current view up, down, left, or right using a gesture preset. |
 | `scroll-to` | `<text>` `[--direction <up\|down\|left\|right>] [--max-scrolls <n>] [--element-type <type>]` | Scroll until an element matching the text is visible. Stops at end of list. |
 | `drag` | `<from>` `<to>` `[--velocity <n>] [--press-ms <n>] [--hold-ms <n>]` | Drag between two points, each an `@ref` or `x,y`. The only precise two-point gesture. |
-| `alert` | `<get\|accept\|dismiss>` `[--button <label>]` | Inspect or respond to a visible iOS system alert. |
+| `alert` | `<get\|accept\|dismiss>` `[--button <label>]` | Inspect or respond to a system alert on iOS or Apple TV. |
 | `type` | `<text>` | Type text into the currently focused input field. |
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
