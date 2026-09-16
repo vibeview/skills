@@ -52,6 +52,7 @@ With Claude Code specifically: `claude mcp add vibeview -- vibeview mcp`.
 | --- | --- |
 | `skills/vibeview-agent/SKILL.md` | The agent workflow: build requirements, the dev loop, verifying with `ui-tree`, screenshots and logs, TV d-pad navigation, the human hand-off rule, cleanup, and the full command reference for both the CLI and MCP. |
 | `.claude-plugin/` | Claude Code plugin manifest: the skill plus the `vibeview mcp` server. |
+| `.mcp.json` | The same MCP server in the standard root-level form that plugin and MCP directories scan for. |
 
 ## Where this comes from
 

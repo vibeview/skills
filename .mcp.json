@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "vibeview": {
+      "command": "npx",
+      "args": ["-y", "vibeview", "mcp"]
+    }
+  }
+}
