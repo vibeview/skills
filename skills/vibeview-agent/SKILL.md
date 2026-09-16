@@ -5,8 +5,8 @@ description: Verify a React Native change on a real running app — install/laun
 
 # VibeView agent control
 
-Drive a live iOS/Android VibeView session from the CLI to verify a React
-Native change actually works, not just that it compiles. Requires the
+Drive a live iOS, Android, Apple TV or Android TV VibeView session from the
+CLI to verify a React Native change actually works, not just that it compiles. Requires the
 `vibeview` CLI installed and authenticated (`vibeview login`, or
 `VIBEVIEW_API_TOKEN` set).
 
