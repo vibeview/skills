@@ -156,6 +156,17 @@ it rather than letting it appear unexplained in their `git status`.
   (`dpad_up`/`dpad_down`/`dpad_left`/`dpad_right`/`dpad_center`), or move
   focus directly with `tap-focused` (moves focus AND activates) / `focus`
   (moves focus only, no activation).
+- **Roku channels (beta)**: start the session with
+  `vibeview dev --platform roku --detach` (`dev_start` over MCP does not
+  accept roku); `r`/`--watch` reloads only exist in the foreground loop, so
+  after an edit re-run `vibeview build --platform roku` and start a new
+  session. The remote's names are `press up/down/left/right/select/back`
+  (`dpad_*` also works); `home` is not forwarded. `type` lands in a focused
+  on-screen keyboard and then warns "may not have applied" every time on
+  Roku -- ignore the warning and read the field from `ui-tree`. `logs` returns
+  nothing on Roku and `open-url` is unavailable. A Back on the channel's root
+  screen exits it; the session relaunches it within seconds, so a fresh
+  first screen after `press back` is not a crash.
 
 ## 4. When only a human can act — stop and hand off
 
