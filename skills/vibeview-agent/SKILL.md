@@ -157,10 +157,10 @@ it rather than letting it appear unexplained in their `git status`.
   focus directly with `tap-focused` (moves focus AND activates) / `focus`
   (moves focus only, no activation).
 - **Roku channels (beta)**: start the session with
-  `vibeview dev --platform roku --detach` (`dev_start` over MCP does not
-  accept roku); `r`/`--watch` reloads only exist in the foreground loop, so
-  after an edit re-run `vibeview build --platform roku` and start a new
-  session. The remote's names are `press up/down/left/right/select/back`
+  `vibeview dev --platform roku --detach` (or `dev_start` with platform
+  `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
+  `dev_reload`) to re-package, upload and restart the channel in the same
+  session — about five seconds. The remote's names are `press up/down/left/right/select/back`
   (`dpad_*` also works); `home` is not forwarded. `type` lands in a focused
   on-screen keyboard and then warns "may not have applied" every time on
   Roku -- ignore the warning and read the field from `ui-tree`. `logs` returns
@@ -232,6 +232,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. |
 | `dev-status` | Check on the current project's detached dev session. |
 | `dev-stop` | End the current project's detached dev session. |
+| `dev-reload` | Roku only: re-package, upload and restart the channel in the detached session (the `r` key of the foreground loop). |
 
 ## 7. If you're calling VibeView over MCP
 
