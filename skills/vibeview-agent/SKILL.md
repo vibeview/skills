@@ -162,8 +162,8 @@ it rather than letting it appear unexplained in their `git status`.
   `dev_reload`) to re-package, upload and restart the channel in the same
   session — about five seconds. The remote's names are `press up/down/left/right/select/back`
   (`dpad_*` also works); `home` is not forwarded. `type` lands in a focused
-  on-screen keyboard and then warns "may not have applied" every time on
-  Roku -- ignore the warning and read the field from `ui-tree`. `logs` returns
+  on-screen keyboard; the typed text shows up in the tree as the text box's
+  child label, which is what the response verifies against. `logs` returns
   the channel's console output (its `print` lines, why it exited, and the
   error plus backtrace after a runtime error); `open-url` is unavailable. A
   Back on the channel's root
