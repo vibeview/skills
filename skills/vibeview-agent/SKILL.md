@@ -156,6 +156,24 @@ it rather than letting it appear unexplained in their `git status`.
   (`dpad_up`/`dpad_down`/`dpad_left`/`dpad_right`/`dpad_center`), or move
   focus directly with `tap-focused` (moves focus AND activates) / `focus`
   (moves focus only, no activation).
+- **Foldable (iPhone Duo)**: start on it by model name —
+  `vibeview dev --detach --json --model "iPhone Duo"` (MCP: `dev_start` with
+  `model`). Exact names come from `vibeview list-devices --models` (MCP:
+  `list_device_models`); a foldable is marked `foldable`. It starts closed, on
+  the cover screen. Fold with a preset or an exact hinge angle, and rotate:
+  ```bash
+  vibeview set-posture open --session <id>        # closed | partial | open
+  vibeview set-posture --angle 75 --session <id>  # 0 (shut) to 180 (flat)
+  vibeview rotate --session <id>                  # quarter turn clockwise
+  vibeview rotate --degrees 270 --session <id>    # quarter turn back (180: half)
+  ```
+  Each response says where the device ended up — posture, angle and which
+  screen is lit (`cover` or `inner`; the device decides — a small angle can
+  keep the inner screen lit on the way down), or the new orientation. Folding
+  switches screens of different sizes and rotating turns the picture, so run
+  `ui-tree` afterwards — old refs are stale. On other phones and tablets
+  `rotate` toggles portrait/landscape (only 90 is accepted); TV devices don't
+  rotate.
 - **Roku channels (beta)**: start the session with
   `vibeview dev --platform roku --detach` (or `dev_start` with platform
   `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
@@ -220,6 +238,8 @@ human-readable text.
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
 | `open-url` | `<url>` | Open a deep link or URL in the app under test. |
+| `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (iPhone Duo) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
+| `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets toggle portrait/landscape (90 only); a foldable turns a quarter clockwise by default. Not on TV. |
 | `wait` | `[--ms <n>]` | Wait for a specified number of seconds before continuing (default: 2s). |
 | `find` | `<text>` `[--below <text>] [--above <text>] [--near <text>]` | Find an element by text with optional spatial constraints. |
 | `tap-focused` | `<ref>` | TV: move focus to an element and press SELECT in one step. |
@@ -229,7 +249,8 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 
 | Command | Purpose |
 |---------|---------|
-| `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. |
+| `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. Add `--model "<name>"` to pick an exact device model. |
+| `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
 | `dev-stop` | End the current project's detached dev session. |
 | `dev-reload` | Roku only: re-package, upload and restart the channel in the detached session (the `r` key of the foreground loop). |
@@ -244,13 +265,14 @@ hyphens replaced by underscores (`ui_tree`, `tap`, `scroll_to`, `long_press`,
 `drag {from: "@e5", to: "300,400"}`, `alert {action: "get"}`) plus an
 optional `session_id`.
 
-Three tools exist **only** over MCP, with no registry verb — they cover the
+These tools exist **only** over MCP, with no registry verb — they cover the
 steps the CLI does with plain shell commands:
 
 | MCP tool | Args | Purpose |
 |----------|------|---------|
 | `upload_app` | `file` (required path), `name` | Upload a debug build. The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`), `app`, `metro_port` | Start a dev-loop session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop. |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model` | Start a dev-loop session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`). Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop. |
+| `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker). The MCP equivalent of `vibeview list-devices --models`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. |
 
 **`dev_start` is stateful — it changes the default session for every later
