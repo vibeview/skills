@@ -156,20 +156,29 @@ it rather than letting it appear unexplained in their `git status`.
   (`dpad_up`/`dpad_down`/`dpad_left`/`dpad_right`/`dpad_center`), or move
   focus directly with `tap-focused` (moves focus AND activates) / `focus`
   (moves focus only, no activation).
-- **Foldable (iPhone Duo)**: start on it by model name —
-  `vibeview dev --detach --json --model "iPhone Duo"` (MCP: `dev_start` with
-  `model`). Exact names come from `vibeview list-devices --models` (MCP:
-  `list_device_models`); a foldable is marked `foldable`. It starts closed, on
-  the cover screen. Fold with a preset or an exact hinge angle, and rotate:
+- **Foldables**: any model `vibeview list-devices --models` (MCP:
+  `list_device_models`) marks form factor `foldable` — the iPhone Duo,
+  Android foldables such as the Pixel 9 Pro Fold. Start on one by its exact
+  model name from that list, e.g.
+  `vibeview dev --detach --json --model "iPhone Duo"` or
+  `vibeview dev --platform android --detach --json --model "Pixel 9 Pro Fold"`
+  (MCP: `dev_start` with `model`). It starts closed, on the cover screen. Fold with a preset
+  or an exact hinge angle, and rotate:
   ```bash
   vibeview set-posture open --session <id>        # closed | partial | open
   vibeview set-posture --angle 75 --session <id>  # 0 (shut) to 180 (flat)
-  vibeview rotate --session <id>                  # quarter turn clockwise
-  vibeview rotate --degrees 270 --session <id>    # quarter turn back (180: half)
+  vibeview rotate --session <id>                  # Duo: quarter turn clockwise
+  vibeview rotate --degrees 270 --session <id>    # Duo: quarter turn back (180: half)
   ```
   Each response says where the device ended up — posture, angle and which
-  screen is lit (`cover` or `inner`; the device decides — a small angle can
-  keep the inner screen lit on the way down), or the new orientation. Folding
+  screen is lit (`cover` or `inner`; the device decides — on the Duo a small
+  angle can keep the inner screen lit on the way down), or the new
+  orientation. The posture names come from each device's own angle ranges,
+  so trust the reported `posture` over the angle you asked for: the Duo
+  reads 120-169 as `partial`, 170 up as `open`, and 1-119 by direction of
+  travel; an Android foldable uses its own ranges (the Pixel 9 Pro Fold: below
+  30 `closed`, 30-149 `partial`, 150 up `open`) and its inner screen whenever
+  it is not closed. An Android foldable rotates like a phone. Folding
   switches screens of different sizes and rotating turns the picture, so run
   `ui-tree` afterwards — old refs are stale. On other phones and tablets
   `rotate` toggles portrait/landscape (only 90 is accepted); TV devices don't
@@ -243,8 +252,8 @@ human-readable text.
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
 | `open-url` | `<url>` | Open a deep link or URL in the app under test. |
-| `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (iPhone Duo) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
-| `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets toggle portrait/landscape (90 only); a foldable turns a quarter clockwise by default. Not on TV. |
+| `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
+| `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
 | `wait` | `[--ms <n>]` | Wait for a specified number of seconds before continuing (default: 2s). |
 | `find` | `<text>` `[--below <text>] [--above <text>] [--near <text>]` | Find an element by text with optional spatial constraints. |
 | `tap-focused` | `<ref>` | TV: move focus to an element and press SELECT in one step. |
