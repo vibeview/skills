@@ -38,10 +38,17 @@ https://vibeview.io/docs/preparing-your-build.
    ```
 2. Start Metro in the React Native project (`yarn start` or equivalent) and
    leave it running.
-3. Start a dev session in the background and get structured output:
+3. Start a dev session in the background and get structured output. No
+   `vibeview.json` yet in this project (first run here)? Pass `--platform`
+   and `--app` explicitly — non-interactive runs never prompt, so both must
+   be given up front (`--app` is `app_id` from step 1's upload output):
    ```bash
-   vibeview dev --detach --json
+   vibeview dev --platform ios --app <app_id> --detach --json
    ```
+   Once `vibeview.json` exists (this run or an earlier one), a bare
+   `vibeview dev --detach --json` reruns the same platform/app. A
+   `{"event":"error","code":"config_required",...}` line names exactly what's
+   still missing (usually `--platform` or `--app`) — pass it and retry.
 4. Parse the `session_ready` line from stdout:
    ```json
    {"event":"session_ready","session_id":"...","url":"...","pid":1234}
