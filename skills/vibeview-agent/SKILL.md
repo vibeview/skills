@@ -247,18 +247,18 @@ human-readable text.
 |------|------|---------|
 | `ui-tree` | — | Fetch the ref-annotated UI tree for the current screen. |
 | `logs` | `[--tail <n>] [--since <cursor>]` | Read recent app logs from the device (JS console, native errors, crash messages). The response's `cursor` feeds the next call's `--since`. |
-| `screenshot` | `[--out <path>]` | Capture a screenshot of the current screen and save it to disk. |
-| `tap` | `<target>` | Tap an element by ref (e.g. `@e5`), or raw coordinates (e.g. `100,200`). |
+| `screenshot` | `[--out <path>]` | Capture a screenshot of the current screen and save it to disk. On a phone or tablet its pixels are tap coordinates: a point read off it can be tapped as is — never rescale. |
+| `tap` | `<target>` | Tap an element by ref (e.g. `@e5`), or coordinates (e.g. `100,200`) in the space of the tree's rects and the screenshot's pixels. |
 | `long-press` | `<ref>` `[--ms <n>]` | Long-press (touch and hold) an element by its ref. |
 | `swipe` | `<direction>` `[--distance <short\|medium\|long>]` | Perform a scrollbar-semantic swipe gesture in one of four directions. |
 | `scroll` | `<direction>` | Scroll the current view up, down, left, or right using a gesture preset. |
 | `scroll-to` | `<text>` `[--direction <up\|down\|left\|right>] [--max-scrolls <n>] [--element-type <type>]` | Scroll until an element matching the text is visible. Stops at end of list. |
 | `drag` | `<from>` `<to>` `[--velocity <n>] [--press-ms <n>] [--hold-ms <n>]` | Drag between two points, each an `@ref` or `x,y`. The only precise two-point gesture. |
 | `alert` | `<get\|accept\|dismiss>` `[--button <label>]` | Inspect or respond to a system alert on iOS or Apple TV. |
-| `type` | `<text>` | Type text into the currently focused input field. |
+| `type` | `<text>` | Type text into the currently focused input field. On a phone or tablet a line break presses Enter and submits the field (`$'query\n'`), like `press enter`. |
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
-| `open-url` | `<url>` | Open a deep link or URL in the app under test. |
+| `open-url` | `<url>` | Open a deep link or URL in the app under test. The link goes to that app only; a link it has no screen for fails (no browser). |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
 | `wait` | `[--ms <n>]` | Wait for a specified number of seconds before continuing (default: 2s). |
