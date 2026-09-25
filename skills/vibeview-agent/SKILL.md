@@ -214,6 +214,11 @@ streaming minutes even when idle:
 ```bash
 vibeview dev-stop
 ```
+A session you did not start with `dev` (one created through the API, the
+sandbox, or a collaboration link) is stopped by id:
+```bash
+vibeview stop <session-id>
+```
 
 ## 6. Command reference
 
@@ -250,9 +255,12 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | Command | Purpose |
 |---------|---------|
 | `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. Add `--model "<name>"` to pick an exact device model. |
+| `dev --build <id>` | Run that uploaded build instead of the app's newest debug build (combine with `--app`, `--platform`, `--model`, `--detach --json`). Only a debug build (kind `debug` in `list-builds`) is accepted; a release build or one with an embedded JS bundle is refused. Not on Roku. |
+| `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
 | `dev-stop` | End the current project's detached dev session. |
+| `vibeview stop <session-id>` | End any session by id — one created through the API, the sandbox, or a collaboration link. |
 | `dev-reload` | Roku only: re-package, upload and restart the channel in the detached session (the `r` key of the foreground loop). |
 
 ## 7. If you're calling VibeView over MCP
@@ -271,9 +279,11 @@ steps the CLI does with plain shell commands:
 | MCP tool | Args | Purpose |
 |----------|------|---------|
 | `upload_app` | `file` (required path), `name` | Upload a debug build. The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model` | Start a dev-loop session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`). Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop. |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id` | Start a dev-loop session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that debug build instead of the newest one (see `list_builds`). Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker). The MCP equivalent of `vibeview list-devices --models`. |
+| `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. |
+| `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. |
 
 **`dev_start` is stateful — it changes the default session for every later
 call.** Once it succeeds, any tool called without an explicit `session_id`
