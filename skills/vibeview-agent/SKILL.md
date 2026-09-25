@@ -134,6 +134,9 @@ it rather than letting it appear unexplained in their `git status`.
   ```bash
   vibeview scroll-to "Delete account" --session <id>
   ```
+  A `scroll-to` that never finds its text, or a `type` whose field does not
+  end up holding the text, prints `error` and exits 1 — check the reason
+  line and the screen before retrying.
 - **Precise two-point gestures** (sliders, drag-and-drop reorder, map
   panning) need `drag` — `swipe`/`scroll` are direction-only and can't
   express them. Each end is independently a ref or `x,y`:
