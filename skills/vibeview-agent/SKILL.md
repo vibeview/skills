@@ -64,11 +64,15 @@ https://vibeview.io/docs/preparing-your-build.
    the page is `https://vibeview.io/sandbox/<session_id>`.)
 
 Running `dev` writes two things into the project root: a `.vibeview/`
-directory (live session state — local machine state, never commit) and a
-`vibeview.json` (your platform/app/build choices, which teammates DO want).
-Make sure `.vibeview/` is in the project's `.gitignore`, adding it if
-missing. Leave `vibeview.json` tracked, but tell the developer you created
-it rather than letting it appear unexplained in their `git status`.
+directory (live session state, plus `local.json` with this developer's own
+flag overrides such as `--metro-port` — local machine state, never commit)
+and a `vibeview.json` (the platform/app/build setup, which teammates DO
+want). Flags never rewrite a value `vibeview.json` already has; they are
+saved to `.vibeview/local.json` instead, and the CLI prints what it saved.
+Make sure the project's `.gitignore` has `.vibeview/*` and
+`!.vibeview/test-spec.json`, adding them if missing. Leave `vibeview.json`
+tracked, but tell the developer you created it rather than letting it
+appear unexplained in their `git status`.
 
 ## 3. Verifying
 
