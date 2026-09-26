@@ -297,12 +297,17 @@ steps the CLI does with plain shell commands:
 
 | MCP tool | Args | Purpose |
 |----------|------|---------|
-| `upload_app` | `file` (required path), `name` | Upload a debug build. The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id` | Start a dev-loop session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that debug build instead of the newest one (see `list_builds`). Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop. |
-| `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker). The MCP equivalent of `vibeview list-devices --models`. |
+| `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
+| `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — and the device it got (model, OS, category; posture and lit screen on a foldable). |
+| `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
-| `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. |
-| `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. |
+| `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
+| `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. Says so when the session had already ended. |
+
+If the held session ends elsewhere (dashboard, idle timeout, failure), the
+next tool call answers "session … has ended (…) — call dev_start"; the
+server has already let it go, so `dev_start` starts a fresh one.
 
 **`dev_start` is stateful — it changes the default session for every later
 call.** Once it succeeds, any tool called without an explicit `session_id`
