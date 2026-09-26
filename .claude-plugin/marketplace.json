@@ -11,7 +11,7 @@
       "name": "vibeview",
       "source": "./",
       "description": "Verify a React Native change on a live cloud device: upload the build, start a session, drive the UI by ref, read logs and screenshots, and hand off to a human when only a human can act.",
-      "version": "0.28.1",
+      "version": "0.29.0",
       "homepage": "https://vibeview.io/docs/agent-control",
       "repository": "https://github.com/vibeview/skills",
       "license": "MIT",
