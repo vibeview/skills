@@ -5,7 +5,7 @@
     "email": "support@vibeview.io",
     "url": "https://vibeview.io"
   },
-  "description": "Skills and MCP server for driving live iOS, Android, Apple TV and Android TV devices in the cloud: install a build, tap through it, read the UI tree, take screenshots, and verify a change actually works.",
+  "description": "Skills and MCP server for driving live iOS, Android, Apple TV, Android TV and Roku (beta) devices in the cloud: install a build, tap through it, read the UI tree, take screenshots, and verify a change actually works.",
   "plugins": [
     {
       "name": "vibeview",
