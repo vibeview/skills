@@ -270,6 +270,7 @@ human-readable text.
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
 | `open-url` | `<url>` | Open a deep link or URL in the app under test. The link goes to that app only; a link it has no screen for fails (no browser). |
+| `relaunch-app` | — | Close the app and start it again (cold start, data kept) — for "does it persist after a restart" checks. The app log keeps streaming. Not on Roku or embed sessions. |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
 | `set-location` | `--lat <n> --lon <n>` | Set the device's simulated GPS position (decimal degrees; west and south are negative) for location-based flows. Phones, tablets and foldables; not on TV. |
