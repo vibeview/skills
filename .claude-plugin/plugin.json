@@ -1,7 +1,7 @@
 {
   "name": "vibeview",
   "description": "Drive live iOS, Android, Apple TV, Android TV and Roku (beta) devices in the cloud from a coding agent: install a build, tap through it, read the UI tree and logs, take screenshots, verify the change.",
-  "version": "0.33.0",
+  "version": "0.34.0",
   "author": {
     "name": "VibeView",
     "email": "support@vibeview.io",
