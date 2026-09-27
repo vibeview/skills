@@ -51,11 +51,18 @@ https://vibeview.io/docs/preparing-your-build.
    still missing (usually `--platform` or `--app`) — pass it and retry.
 4. Parse the `session_ready` line from stdout:
    ```json
-   {"event":"session_ready","session_id":"...","url":"...","pid":1234}
+   {"event":"session_ready","session_id":"...","url":"...","pid":1234,"build":{...}}
    ```
    Use `session_id` as `--session <id>` on every verb below. The event
    fires once the session accepts commands (device up, app installed) —
-   no need to poll `dev-status` first. If the app ships no native changes
+   no need to poll `dev-status` first. `build` says which build was
+   installed (`build.build`), why (`build.reason`: it prefers a debug build
+   of the project's own app version over a newer one of another version),
+   and the newest debug build of each other version (`build.other_debug_builds`).
+   If the app shows a red error screen right after start ("React Native
+   version mismatch", or "undefined is not a function" in a native module),
+   the build may be from other native code — rerun with `--build <id>` of
+   one of those. If the app ships no native changes
    since the last run, skip step 1 and just do steps 2–4.
 5. **Immediately tell the developer the session `url`** — "watch or take
    over at any time: `<url>`". The page is a live, fully interactive view
@@ -244,6 +251,9 @@ streaming minutes even when idle:
 ```bash
 vibeview dev-stop
 ```
+If the `dev --detach` process is killed or the computer sleeps, its session
+ends on its own within about 90 seconds (unless a browser tab is watching
+it) — but don't rely on that; stop it.
 A session you did not start with `dev` (one created through the API, the
 sandbox, or a collaboration link) is stopped by id:
 ```bash
@@ -312,7 +322,7 @@ steps the CLI does with plain shell commands:
 |----------|------|---------|
 | `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
 | `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. A red "React Native version mismatch" screen means that build was made with another React Native than the project: pick one made from this project with `build_id`. While every device is busy it waits in the queue, sending progress. |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. It chooses the build the way `vibeview dev` does (a debug build of the project's own version over a newer one of another version) and says when it can't read the project's version. A red error screen right after start ("React Native version mismatch", or "undefined is not a function" in a native module) may mean the build was made from other native code: try one of the listed other builds with `build_id`. While every device is busy it waits in the queue, sending progress. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
@@ -329,5 +339,7 @@ targets that session instead of whatever `vibeview dev --detach` state exists
 in the project directory. Only one such session can be held at a time
 (`dev_start` fails if one is already running), and it stays live — billing
 streaming minutes — until `dev_stop` or the MCP connection ends (the server
-stops it when the client quits or closes the connection; a killed server
-can't). Always call `dev_stop` when you finish verifying.
+stops it when the client quits or closes the connection; if the server is
+killed or the computer sleeps, the session ends within about 90 seconds
+unless a browser tab is watching it). Always call `dev_stop` when you
+finish verifying.
