@@ -2,18 +2,18 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.vibeview/vibeview",
   "title": "VibeView",
-  "description": "Drive live iOS, Android, Apple TV and Android TV devices in the cloud to verify app changes.",
+  "description": "Drive cloud iOS, Android, Apple TV, Android TV and Roku (beta) devices to verify app changes.",
   "repository": {
     "url": "https://github.com/vibeview/skills",
     "source": "github"
   },
   "websiteUrl": "https://vibeview.io/docs/agent-control",
-  "version": "0.32.0",
+  "version": "0.33.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "vibeview",
-      "version": "0.32.0",
+      "version": "0.33.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

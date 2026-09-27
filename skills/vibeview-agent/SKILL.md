@@ -115,7 +115,9 @@ appear unexplained in their `git status`.
   vibeview screenshot --out ./check.png --session <id>   # then open it
   ```
   Over MCP, `screenshot` only writes the file and returns its path unless
-  you pass `inline: true`, which returns the image itself. If you cannot
+  you pass `inline: true`, which returns the image itself (under 1 MB — a
+  JPEG when the PNG is large — at the same size, so its pixels are still tap
+  coordinates). If you cannot
   open files on the machine running the server, `inline: true` is the only
   way you will ever see the screen. It costs a lot of context, so use it
   when appearance matters — not to confirm a tap landed, which the
@@ -161,6 +163,9 @@ appear unexplained in their `git status`.
   ```
   On Apple TV this also covers the "Open in …?" prompt a deep link raises;
   the button is answered with the remote.
+- Use `set-location --lat 51.5074 --lon -0.1278` to place the device before
+  a location-based flow (maps, store finders, region-gated screens); the app
+  reads it like a GPS fix. Not on TV.
 - Use `open-url` to jump straight to a deep link instead of navigating by
   hand:
   ```bash
@@ -190,10 +195,11 @@ appear unexplained in their `git status`.
   angle can keep the inner screen lit on the way down), or the new
   orientation. The posture names come from each device's own angle ranges,
   so trust the reported `posture` over the angle you asked for: the Duo
-  reads 120-169 as `partial`, 170 up as `open`, and 1-119 by direction of
-  travel; an Android foldable uses its own ranges (the Pixel 9 Pro Fold: below
-  30 `closed`, 30-149 `partial`, 150 up `open`) and its inner screen whenever
-  it is not closed. An Android foldable rotates like a phone. Folding
+  reads 0 as `closed` and 170 up as `open`; in between it depends on how the
+  hinge got there (moved in one go it switches at about 85 degrees, moved in
+  small steps it keeps the screen it had); an Android foldable uses its own
+  ranges (the Pixel 9 Pro Fold: 0-30 `closed`, 31-149 `partial`, 150 up
+  `open`) and its inner screen whenever it is not closed. An Android foldable rotates like a phone. Folding
   switches screens of different sizes and rotating turns the picture, so run
   `ui-tree` afterwards — old refs are stale. On other phones and tablets
   `rotate` toggles portrait/landscape (only 90 is accepted); TV devices don't
@@ -266,9 +272,11 @@ human-readable text.
 | `type` | `<text>` | Type text into the currently focused input field. On a phone or tablet a line break presses Enter and submits the field (`$'query\n'`), like `press enter`. |
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
-| `open-url` | `<url>` | Open a deep link or URL in the app under test. The link goes to that app only; a link it has no screen for fails (no browser). |
+| `open-url` | `<url>` | Open a deep link in the app under test, never a browser. Android: a link the app has no screen for fails. iOS/Apple TV: only the app's own URL scheme (`myapp://...`); a web or system link is refused. |
+| `relaunch-app` | — | Close the app and start it again (cold start, data kept) — for "does it persist after a restart" checks. The app log keeps streaming. Not on Roku or embed sessions. |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
+| `set-location` | `--lat <n> --lon <n>` | Set the device's simulated GPS position (decimal degrees; west and south are negative) for location-based flows. Phones, tablets and foldables; not on TV. |
 | `wait` | `[--ms <n>]` | Wait for a specified number of seconds before continuing (default: 2s). |
 | `find` | `<text>` `[--below <text>] [--above <text>] [--near <text>]` | Find an element by text with optional spatial constraints. |
 | `tap-focused` | `<ref>` | TV: move focus to an element and press SELECT in one step. |
@@ -279,7 +287,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | Command | Purpose |
 |---------|---------|
 | `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. Add `--model "<name>"` to pick an exact device model. |
-| `dev --build <id>` | Run that uploaded build instead of the app's newest debug build (combine with `--app`, `--platform`, `--model`, `--detach --json`). Only a debug build (kind `debug` in `list-builds`) is accepted; a release build or one with an embedded JS bundle is refused. Not on Roku. |
+| `dev --build <id>` | Run that uploaded build instead of the app's newest debug build (combine with `--app`, `--platform`, `--model`, `--detach --json`). Only a debug build (kind `debug` in `list-builds`) is accepted, including a debug build with its JS bundle embedded; a release build is refused (run it with `--standalone`). Not on Roku. |
 | `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
@@ -304,11 +312,12 @@ steps the CLI does with plain shell commands:
 |----------|------|---------|
 | `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
 | `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — and the device it got (model, OS, category; posture and lit screen on a foldable). |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. A red "React Native version mismatch" screen means that build was made with another React Native than the project: pick one made from this project with `build_id`. While every device is busy it waits in the queue, sending progress. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
 | `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. Says so when the session had already ended. |
+| `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
 
 If the held session ends elsewhere (dashboard, idle timeout, failure), the
 next tool call answers "session … has ended (…) — call dev_start"; the
@@ -319,5 +328,6 @@ call.** Once it succeeds, any tool called without an explicit `session_id`
 targets that session instead of whatever `vibeview dev --detach` state exists
 in the project directory. Only one such session can be held at a time
 (`dev_start` fails if one is already running), and it stays live — billing
-streaming minutes — until `dev_stop` or the MCP connection ends. Always call
-`dev_stop` when you finish verifying.
+streaming minutes — until `dev_stop` or the MCP connection ends (the server
+stops it when the client quits or closes the connection; a killed server
+can't). Always call `dev_stop` when you finish verifying.
