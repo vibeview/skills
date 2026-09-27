@@ -161,6 +161,9 @@ appear unexplained in their `git status`.
   ```
   On Apple TV this also covers the "Open in …?" prompt a deep link raises;
   the button is answered with the remote.
+- Use `set-location --lat 51.5074 --lon -0.1278` to place the device before
+  a location-based flow (maps, store finders, region-gated screens); the app
+  reads it like a GPS fix. Not on TV.
 - Use `open-url` to jump straight to a deep link instead of navigating by
   hand:
   ```bash
@@ -269,6 +272,7 @@ human-readable text.
 | `open-url` | `<url>` | Open a deep link or URL in the app under test. The link goes to that app only; a link it has no screen for fails (no browser). |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
+| `set-location` | `--lat <n> --lon <n>` | Set the device's simulated GPS position (decimal degrees; west and south are negative) for location-based flows. Phones, tablets and foldables; not on TV. |
 | `wait` | `[--ms <n>]` | Wait for a specified number of seconds before continuing (default: 2s). |
 | `find` | `<text>` `[--below <text>] [--above <text>] [--near <text>]` | Find an element by text with optional spatial constraints. |
 | `tap-focused` | `<ref>` | TV: move focus to an element and press SELECT in one step. |
