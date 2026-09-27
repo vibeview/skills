@@ -69,8 +69,9 @@ flag overrides such as `--metro-port` — local machine state, never commit)
 and a `vibeview.json` (the platform/app/build setup, which teammates DO
 want). Flags never rewrite a value `vibeview.json` already has; they are
 saved to `.vibeview/local.json` instead, and the CLI prints what it saved.
-Make sure the project's `.gitignore` has `.vibeview/*` and
-`!.vibeview/test-spec.json`, adding them if missing. Leave `vibeview.json`
+The CLI keeps `.vibeview/` out of git itself with a `.vibeview/.gitignore`
+(everything except `test-spec.json`); don't add lines to the project's own
+`.gitignore` for it. Leave `vibeview.json`
 tracked, but tell the developer you created it rather than letting it
 appear unexplained in their `git status`.
 
