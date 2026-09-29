@@ -211,7 +211,7 @@ appear unexplained in their `git status`.
   `ui-tree` afterwards — old refs are stale. On other phones and tablets
   `rotate` toggles portrait/landscape (only 90 is accepted); TV devices don't
   rotate.
-- **Roku channels (beta)**: start the session with
+- **Roku channels**: start the session with
   `vibeview dev --platform roku --detach` (or `dev_start` with platform
   `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
   `dev_reload`) to re-package, upload and restart the channel in the same
