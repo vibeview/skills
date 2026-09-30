@@ -254,6 +254,10 @@ vibeview dev-stop
 If the `dev --detach` process is killed or the computer sleeps, its session
 ends on its own within about 90 seconds (unless a browser tab is watching
 it) — but don't rely on that; stop it.
+A session nobody uses also ends on its own after the organization's idle
+timeout (30 minutes by default). Only device actions (tap, type, swipe,
+press, …) and app reloads count as use; `ui-tree`, `screenshot`, `logs`,
+`find` and `wait` do not, and neither does keeping `dev --detach` running.
 A session you did not start with `dev` (one created through the API, the
 sandbox, or a collaboration link) is stopped by id:
 ```bash
@@ -332,6 +336,10 @@ steps the CLI does with plain shell commands:
 If the held session ends elsewhere (dashboard, idle timeout, failure), the
 next tool call answers "session … has ended (…) — call dev_start"; the
 server has already let it go, so `dev_start` starts a fresh one.
+A tool result that ends with `Session … ends in N s for inactivity` means
+the held session is about to time out: act on the device to keep it, or call
+`dev_stop` if you are done. A session another VibeView dev connection took
+over is reported as taken over; it keeps running there, so don't stop it.
 
 **`dev_start` is stateful — it changes the default session for every later
 call.** Once it succeeds, any tool called without an explicit `session_id`
