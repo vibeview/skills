@@ -216,7 +216,7 @@ appear unexplained in their `git status`.
   `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
   `dev_reload`) to re-package, upload and restart the channel in the same
   session — about five seconds. The remote's names are `press up/down/left/right/select/back`
-  (`dpad_*` also works); `home` is not forwarded. `type` lands in a focused
+  (`dpad_*` also works), plus `enter`, `backspace` and the media keys `play/rewind/forward/replay/info`; `home` is refused (the session stays in your channel); `relaunch-app` restarts the channel with its launch parameters; `clear-text` is unavailable. `type` lands in a focused
   on-screen keyboard; the typed text shows up in the tree as the text box's
   child label, which is what the response verifies against. `logs` returns
   the channel's console output (its `print` lines, why it exited, and the
@@ -287,7 +287,7 @@ human-readable text.
 | `clear-text` | — | Clear the text in the currently focused input field. |
 | `press` | `<button>` | Press a device button or perform a system gesture (home, back, d-pad, etc). |
 | `open-url` | `<url>` | Open a deep link in the app under test, never a browser. Android: a link the app has no screen for fails. iOS/Apple TV: only the app's own URL scheme (`myapp://...`); a web or system link is refused. |
-| `relaunch-app` | — | Close the app and start it again (cold start, data kept) — for "does it persist after a restart" checks. The app log keeps streaming. Not on Roku or embed sessions. |
+| `relaunch-app` | — | Close the app and start it again (cold start, data kept) — for "does it persist after a restart" checks. The app log keeps streaming. Not on embed sessions. |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
 | `set-location` | `--lat <n> --lon <n>` | Set the device's simulated GPS position (decimal degrees; west and south are negative) for location-based flows. Phones, tablets and foldables; not on TV. |
