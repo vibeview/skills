@@ -331,6 +331,10 @@ steps the CLI does with plain shell commands:
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
 | `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. Says so when the session had already ended. |
+| `create_test` | `app`, `name`, `steps` (required), `group` | Create a test from plain-language steps, one per line (a check is a step starting with "Verify"). Returns the test id for `run_test`. |
+| `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only), `ai_only`. Returns a run id for `get_run`. |
+| `run_group` | `group` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run every test of a group in order, on `session_id` or, without it, on a new device VibeView starts (never your `dev_start` session). Returns a run id for `get_run`. |
+| `get_run` | `run_id` (required) | A run's status and, when a test failed, which step and why. |
 | `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
 
 If the held session ends elsewhere (dashboard, idle timeout, failure), the
