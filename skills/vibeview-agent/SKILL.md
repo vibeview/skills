@@ -252,6 +252,19 @@ hit one:
    the confirmation alone. If it's still there, say what you still see and
    ask again.
 
+### When VibeView itself gets in your way
+
+If VibeView — not the user's app — gets in your way (an error you can't
+explain, a missing capability, confusing output), offer to tell the VibeView
+team. Show the user what you will send and send it only with their OK:
+
+    vibeview feedback bug "dev_start says build not found for a build I just uploaded" \
+      --details "upload-app returned build 123; dev --build 123 failed" --session <id>
+
+`kind` is `bug`, `friction` (worked, but confusing, slow or awkward) or `idea`.
+Never include passwords, tokens, test data values or personal data. Over MCP
+the same tool is `send_feedback`.
+
 ## 5. Cleanup
 
 **Always** stop the session when done verifying — a running session bills
@@ -318,6 +331,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `dev-stop` | End the current project's detached dev session. |
 | `vibeview stop <session-id>` | End any session by id — one created through the API, the sandbox, or a collaboration link. |
 | `dev-reload` | Roku only: re-package, upload and restart the channel in the detached session (the `r` key of the foreground loop). |
+| `vibeview feedback <bug\|friction\|idea> "<summary>"` | Send the VibeView team a report about VibeView itself (not your app), only after the user OKs it: `--details`, `--session` (defaults to the detached session, if any), `--quote` (the user's own words). Works with no session. |
 
 ## 7. If you're calling VibeView over MCP
 
