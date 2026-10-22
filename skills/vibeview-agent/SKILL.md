@@ -311,6 +311,7 @@ human-readable text.
 | `relaunch-app` | — | Close the app and start it again (cold start, data kept) — for "does it persist after a restart" checks. The app log keeps streaming. Not on embed sessions. |
 | `set-posture` | `<closed\|partial\|open>` or `--angle <0-180>` | Fold or unfold a foldable device (form factor `foldable`: the iPhone Duo, Android foldables) to a preset or an exact hinge angle — exactly one. Reports posture, angle and lit screen. Errors on a device without a hinge. |
 | `rotate` | `[--degrees <90\|180\|270>]` | Rotate the device and report the new orientation. Phones/tablets and Android foldables toggle portrait/landscape (90 only); the iPhone Duo turns a quarter clockwise by default. Not on TV. |
+| `shake` | — | Shake the device once, like the dashboard's Shake button, to open an app's shake-triggered menus (a bug-report screen, the React Native developer menu in a debug build). Phones, tablets and foldables; not on TV or embed sessions. |
 | `set-language` | `<tag\|default>` | Restart the app in another language (`de`, `pt-BR`, …) or the device's (`default`). Only the app changes. iPhone, iPad, Apple TV, Android 13+; not Roku or embed sessions. |
 | `set-status-bar` | `<clean\|default>` | Show the clean screenshot status bar (9:41, full battery and signal) or the device's own. iOS phones and tablets only. |
 | `set-location` | `--lat <n> --lon <n>` | Set the device's simulated GPS position (decimal degrees; west and south are negative) for location-based flows. Phones, tablets and foldables; not on TV. |
