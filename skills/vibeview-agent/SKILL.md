@@ -223,7 +223,9 @@ appear unexplained in their `git status`.
   `vibeview dev --platform roku --detach` (or `dev_start` with platform
   `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
   `dev_reload`) to re-package, upload and restart the channel in the same
-  session — about five seconds. The remote's names are `press up/down/left/right/select/back`
+  session — about five seconds. `vibeview dev --roku-debug` is for a person
+  debugging in VS Code, not for you: use plain `dev --platform roku --detach`
+  plus `dev-reload` (which refuses a debug session). The remote's names are `press up/down/left/right/select/back`
   (`dpad_*` also works), plus `enter`, `backspace` and the media keys `play/rewind/forward/replay/info`; `home` is refused (the session stays in your channel); `relaunch-app` restarts the channel with its launch parameters; `clear-text` is unavailable. `type` lands in a focused
   on-screen keyboard; the typed text shows up in the tree as the text box's
   child label, which is what the response verifies against. `logs` returns
