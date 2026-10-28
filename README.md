@@ -1,8 +1,35 @@
 # VibeView agent skills
 
-Skills and an MCP server that let a coding agent verify its work on a **live cloud device**: upload a build, start an iOS, Android, Apple TV or Android TV session, drive the app by UI-tree refs, read logs, take screenshots, and stop when only a human can act.
+[![npm](https://img.shields.io/npm/v/vibeview?label=vibeview%20CLI)](https://www.npmjs.com/package/vibeview)
+[![GitHub MCP registry](https://img.shields.io/badge/GitHub-MCP%20registry-24292f?logo=github)](https://github.com/mcp/vibeview/vibeview)
+
+Skills and an MCP server that let a coding agent verify its work on a **live cloud device**: upload a build, start an iOS, Android, Apple TV, Android TV or Roku session, drive the app by UI-tree refs, read logs, take screenshots, and stop when only a human can act.
 
 [VibeView](https://vibeview.io) streams iOS simulators, Android emulators, Apple TV and Android TV simulators, and Roku devices to a browser and to agents. No Mac, no local simulator, no device on the desk. Docs: [AI agent control](https://vibeview.io/docs/agent-control).
+
+<p align="center">
+  <img src="assets/agent-session.png" alt="Claude Code using the VibeView MCP server: it starts an iPhone session, reads the UI tree, taps a card by its ref, takes a screenshot and stops the session" width="800">
+</p>
+
+## What your agent can do
+
+- **Start and stop sessions** on iOS, Android, Apple TV, Android TV and Roku, with your app installed and launched.
+- **Read the screen as a UI tree** with short refs (`@e7`), then tap, type or swipe by ref. On TVs, press remote buttons.
+- **Check the result**: screenshots, app logs, and the tree again after each action.
+- **Hand off to you** when a step needs a person, such as a login or a payment, through a link to the live session.
+
+You can watch every session live in the dashboard while the agent works.
+
+<table>
+  <tr>
+    <td><img src="assets/device-ios.png" alt="An iPhone simulator session in the VibeView dashboard"></td>
+    <td><img src="assets/device-android.png" alt="An Android emulator session in the VibeView dashboard"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/device-appletv.png" alt="An Apple TV session in the VibeView dashboard"></td>
+    <td><img src="assets/device-roku.png" alt="A Roku session in the VibeView dashboard"></td>
+  </tr>
+</table>
 
 ## Install
 
