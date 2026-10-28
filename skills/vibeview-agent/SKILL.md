@@ -1,70 +1,175 @@
 ---
 name: vibeview-agent
-description: Verify a React Native change on a real running app — install/launch it on a live iOS, Android, Apple TV or Android TV device via VibeView, drive the UI, and check the result. Use when asked to verify this change on a device, test my React Native app, or run it on a simulator.
+description: Build, run, drive and test a mobile or TV app on live cloud devices with VibeView - iOS, Android, Apple TV, Android TV and Roku. Use when asked to verify a change on a device, run the app on a simulator or emulator, build it in the cloud (including iOS without a Mac), check a React Native, Expo, Flutter or native app or a Roku channel, or create and run tests for it.
 ---
 
 # VibeView agent control
 
-Drive a live iOS, Android, Apple TV or Android TV VibeView session from the
-CLI to verify a React Native change actually works, not just that it compiles. Requires the
-`vibeview` CLI installed and authenticated (`vibeview login`, or
-`VIBEVIEW_API_TOKEN` set).
+VibeView runs your app on cloud iOS, Android, Apple TV, Android TV and Roku
+devices (simulators and emulators). From the `vibeview` CLI, or its MCP server,
+you can build the app in the cloud, start a session, drive the UI, read logs,
+and run saved tests, so you can check that a change actually works, not just
+that it compiles. Requires the `vibeview` CLI installed and signed in
+(`vibeview login`, or `VIBEVIEW_API_TOKEN` set); `vibeview whoami` tells you
+which account and organization you are using.
 
-## 1. Build requirements
+## 1. Get the app onto a device
 
-Read before uploading anything — a build that violates these will install
-and then crash or refuse to boot:
+Pick the first row that fits, then start a session (section 2).
 
-- **Android**: the debug APK must include an `x86_64` slice. Standard
-  `./gradlew assembleDebug` output includes it by default; only an issue if
-  the project filters ABIs.
-- **iOS**: upload a **simulator** debug build (not a device `.ipa`), and it
-  must include the `arm64` slice.
+| Situation | Do this |
+|-----------|---------|
+| The newest build on VibeView already contains your change, or it is a React Native/Expo debug build and you changed only JS or assets | Nothing to build. A debug build loads your JS from local Metro and hot-reloads it. Find the app with `vibeview list-apps` (MCP: `list_apps`) and its builds with `vibeview list-builds <app>` (MCP: `list_builds`). |
+| You have a build file that contains your change (simulator `.app` zipped, `.apk`, Roku channel `.zip`) | `vibeview upload-app <file>` (MCP: `upload_app`). |
+| A native change in a React Native/Expo app, or any code change in a Flutter, Capacitor, Kotlin Multiplatform or native app, and this machine can build it (Xcode for iOS/Apple TV) | `vibeview dev --build`. It runs the `development` profile's command from `vibeview.json` here, uploads the result, then starts the session. `vibeview build` builds and uploads without a session. |
+| The same kind of change, but no Mac or no toolchain here | Cloud build: `vibeview build --cloud` (section 1.1). This is the iOS path from Linux or Windows. |
+| Roku channel | Not cloud-built. Required: a `platforms.roku.build.profiles.development` entry in `vibeview.json` (`command` packages the zip, `artifact` is its path). Without it `vibeview dev --platform roku` refuses to start. With it, `vibeview dev --platform roku --build --detach --json` packages and uploads the channel itself, and `dev-reload` reinstalls it after an edit (section 3). |
 
-Debug builds are auto-detected on upload — no separate flag needed. Upload
-warnings are the safety net: if a build is missing the right architecture,
-`upload-app` says so.
+Build rules — a build that breaks these installs and then crashes or is
+refused:
 
-Full detail: https://vibeview.io/docs/live-development and
+- **iOS and Apple TV**: a **simulator** build (`-sdk iphonesimulator` or
+  `-sdk appletvsimulator`, `CODE_SIGNING_ALLOWED=NO`) with the `arm64` slice,
+  never a device `.ipa` or archive.
+- **Android and Android TV**: an `.apk` (an `.aab` can't be installed) that
+  keeps the `x86_64` slice (and `x86` for Android TV) if the app has native
+  code. Standard `./gradlew assembleDebug` output has it.
+
+Upload warnings and the build page say when a build can't run (wrong
+architecture, a device build), so read them. Details:
 https://vibeview.io/docs/preparing-your-build.
 
-## 2. The loop
+**Debug or standalone.** A React Native or Expo *debug* build loads its JS
+from Metro on this machine: that's the dev loop with hot reload, and it needs
+Metro running. Every other build (a release or `preview` build,
+a Flutter, Capacitor, Kotlin Multiplatform or native app) runs **standalone**:
+start it with `vibeview dev --standalone` (MCP: `dev_start` with
+`standalone: true`). Code changes don't hot-reload there; rebuild instead.
+`list-builds` shows each build's kind (`debug`, `release`, `unknown`).
 
-1. Upload the debug build — **only after a native change** (new/updated
-   native module, Podfile/Gradle change). Everyday JS/asset edits never need
-   a re-upload:
-   ```bash
-   vibeview upload-app ./path/to/app-debug.apk
-   ```
-2. Start Metro in the React Native project (`yarn start` or equivalent) and
-   leave it running.
-3. Start a dev session in the background and get structured output. No
+### 1.1 Cloud builds
+
+`vibeview build --cloud` uploads the project source and runs a build
+profile's command on a clean cloud builder. The result lands in the app's
+build history, ready to run. The upload is every git-tracked file plus every
+untracked file `.gitignore` doesn't exclude, so a stray local `.env` goes
+too. `node_modules`, `ios/Pods` and `.git` never do. Add paths to a
+`.vvignore` file (same syntax as `.gitignore`) to keep more out.
+Builds are billed by the minute: ask the developer before starting one.
+There is no MCP tool for builds: an agent with only MCP asks the developer to
+run `vibeview build --cloud`, then finds the result with `list_builds`.
+
+```bash
+vibeview build --cloud --json                      # defaultPlatform, development profile
+vibeview build --cloud --platform ios --json
+vibeview build --cloud --platform ios --profile preview --json   # runs without Metro
+```
+
+Build only the platform you will run. `--platform all` builds, and bills,
+every configured platform.
+
+- **Profiles** live in `vibeview.json` under
+  `platforms.<platform>.build.profiles.<name>`, each with a `command` and an
+  `artifact` (a project-relative path; `*` is allowed in the file name).
+  Three names are conventional. `development` is the default and what
+  `vibeview dev` runs (a debug build for React Native/Expo). `preview` is
+  the same build in Release with the JS inside, so it runs standalone.
+  `production` is a signed store build that VibeView devices can't run.
+  Other names work too.
+- **Run it from the project root.** The command runs in a clean
+  environment, so it must install dependencies itself (`npm ci`,
+  `yarn install --immutable`, `pnpm install --frozen-lockfile`, plus
+  `pod install` for a bare iOS build). Cloud builders have no Bun.
+- **Under `--json` nothing prompts.** A missing profile is an `error` event
+  with `code: "config_required"` whose message names the key to add (e.g.
+  `platforms.ios.build.profiles.preview {command, artifact}`): add it to
+  `vibeview.json` and rerun. A project with no app yet gets one created from
+  the build, and its `appId` is written to `vibeview.json`. Show the
+  developer any `vibeview.json` change you make.
+- **Expo**: a managed project (no `ios/` or `android/` folder) builds with
+  `npx expo prebuild --platform <p>` followed by `xcodebuild` or Gradle in the
+  same command. Never use `npx expo run:ios` / `run:android` as a cloud build
+  command: they need a local device and fail. Metro for the dev loop is
+  `npx expo start`. Ready-made commands per framework:
+  https://vibeview.io/docs/cloud-builds#frameworks.
+- **Xcode and Node** can be chosen per run with `--xcode <version>` (iOS,
+  Apple TV) and `--node <major>`; a version that isn't available is refused
+  before anything is charged and the error lists the choices.
+
+**Waiting and reading the result.** With `--json`, stdout is NDJSON. You
+get `build_created` (the cloud build `id`), `status` (`queued`, then
+`running`), `build_log` and `warning` events. Each build ends with one
+`build_finished` event. It carries `status`, `error_summary`,
+`app_public_id`, `app_build_id` (the uploaded build it produced) and
+`launch_warning`. A non-null `launch_warning` means the build won't launch
+(for example an iOS 27 SDK build without the scene life cycle): fix that
+before running it. Exit code 0 means every build succeeded. On failure, read
+the log before changing anything:
+
+```bash
+vibeview builds list --json              # recent cloud builds, with status
+vibeview builds logs <id>                # a build's log
+vibeview builds logs <id> --follow       # stream until done; exit 1 if it failed
+```
+
+With `--no-wait` it prints the ids and exits; follow up with
+`builds logs <id> --follow`. A build can succeed and still be unable to run
+on VibeView devices (for example a device build); its result says why.
+
+**Running it.** Pass `app_build_id` from `build_finished` (or an id from
+`list-builds`):
+
+```bash
+vibeview dev --platform ios --build <app_build_id> --detach --json               # development (debug) build, with Metro
+vibeview dev --platform ios --standalone --build <app_build_id> --detach --json  # preview or any other non-debug build
+```
+
+Pass the `--platform` the build was made for. Without it `dev` uses
+`defaultPlatform`, and a build of another platform's app is refused.
+
+MCP: `dev_start` with `build_id` (plus `standalone: true` for a non-debug
+build). Plain `vibeview dev` with no `--build` already picks the app's newest
+debug build, cloud-built ones included.
+
+A signed store build is made with `--production` and sent to the stores with
+`vibeview submit`; that is a release task for the developer, not part of
+verifying a change.
+
+## 2. Start a session
+
+1. For a React Native/Expo dev session, start Metro in the project
+   (`yarn start`, `npx expo start` or equivalent) and leave it running. Not
+   needed with `--standalone` or on Roku.
+2. Start a dev session in the background and get structured output. No
    `vibeview.json` yet in this project (first run here)? Pass `--platform`
-   and `--app` explicitly — non-interactive runs never prompt, so both must
-   be given up front (`--app` is `app_id` from step 1's upload output):
+   (`ios`, `android`, `tvos`, `androidtv` or `roku`) and `--app` explicitly —
+   non-interactive runs never prompt, so both must be given up front (`--app`
+   is the `app_id` from `upload-app` or `list-apps`):
    ```bash
    vibeview dev --platform ios --app <app_id> --detach --json
    ```
    Once `vibeview.json` exists (this run or an earlier one), a bare
    `vibeview dev --detach --json` reruns the same platform/app. A
    `{"event":"error","code":"config_required",...}` line names exactly what's
-   still missing (usually `--platform` or `--app`) — pass it and retry.
-4. Parse the `session_ready` line from stdout:
+   still missing (usually `--platform` or `--app`) — pass it and retry. Add
+   `--model "<name>"` for an exact device model (`vibeview list-devices
+   --models`) or `--device-category tablet` for a tablet.
+3. Parse the `session_ready` line from stdout:
    ```json
    {"event":"session_ready","session_id":"...","url":"...","pid":1234,"build":{...}}
    ```
    Use `session_id` as `--session <id>` on every verb below. The event
    fires once the session accepts commands (device up, app installed) —
-   no need to poll `dev-status` first. `build` says which build was
-   installed (`build.build`), why (`build.reason`: it prefers a debug build
-   of the project's own app version over a newer one of another version),
-   and the newest debug build of each other version (`build.other_debug_builds`).
-   If the app shows a red error screen right after start ("React Native
-   version mismatch", or "undefined is not a function" in a native module),
-   the build may be from other native code — rerun with `--build <id>` of
-   one of those. If the app ships no native changes
-   since the last run, skip step 1 and just do steps 2–4.
-5. **Immediately tell the developer the session `url`** — "watch or take
+   no need to poll `dev-status` first. If every device is busy, it waits in
+   the queue first (`queued` events) rather than failing. `build` says which
+   build was installed (`build.build`), why (`build.reason`: it prefers a
+   debug build of the project's own app version over a newer one of another
+   version), and the newest debug build of each other version
+   (`build.other_debug_builds`). If the app shows a red error screen right
+   after start ("React Native version mismatch", or "undefined is not a
+   function" in a native module), the build may be from other native code —
+   rerun with `--build <id>` of one of those.
+4. **Immediately tell the developer the session `url`** — "watch or take
    over at any time: `<url>`". The page is a live, fully interactive view
    of the device; the developer watching along is a feature, not a risk.
    (For a session you attached to with `--session` instead of starting,
@@ -220,12 +325,15 @@ appear unexplained in their `git status`.
   `rotate` toggles portrait/landscape (only 90 is accepted); TV devices don't
   rotate.
 - **Roku channels**: start the session with
-  `vibeview dev --platform roku --detach` (or `dev_start` with platform
+  `vibeview dev --platform roku --detach --json` (or `dev_start` with platform
   `roku` over MCP); after an edit run `vibeview dev-reload` (MCP:
   `dev_reload`) to re-package, upload and restart the channel in the same
   session — about five seconds. `vibeview dev --roku-debug` is for a person
   debugging in VS Code, not for you: use plain `dev --platform roku --detach`
-  plus `dev-reload` (which refuses a debug session). The remote's names are `press up/down/left/right/select/back`
+  plus `dev-reload` (which refuses a debug session). Use `dev-reload` after
+  your edits rather than `--watch`: `--watch` reloads on every save, which
+  suits a person, not an agent that edits several files. The remote's
+  names are `press up/down/left/right/select/back`
   (`dpad_*` also works), plus `enter`, `backspace` and the media keys `play/rewind/forward/replay/info`; `home` is refused (the session stays in your channel); `relaunch-app` restarts the channel with its launch parameters; `clear-text` is unavailable. `type` lands in a focused
   on-screen keyboard; the typed text shows up in the tree as the text box's
   child label, which is what the response verifies against. `logs` returns
@@ -267,7 +375,54 @@ team. Show the user what you will send and send it only with their OK:
 Never include passwords, tokens, test data values or personal data. Over MCP
 the same tool is `send_feedback`.
 
-## 5. Cleanup
+## 5. Tests
+
+A test is a list of plain-language steps; a step starting with "Verify" is a
+check. Write one when the developer asks for a repeatable check, not to
+verify a one-off change (driving the session does that).
+
+- **AI runs are beta and use usage credit.** The first run of a new test is
+  driven by the AI agent; once it passes, later runs replay the saved path
+  and use AI only where the screen changed. Ask before starting AI runs.
+- **Never put real credentials in steps.** Use `{{key}}` placeholders whose
+  values the developer stores as test data in the dashboard.
+- **A run on a new device needs a build that runs without Metro.** A React
+  Native debug build without its JS inside stops at its error screen there.
+  Run such tests against a `preview` (or other release) build. Without
+  `--build`, a run prefers a build that runs on its own, and falls back to a
+  debug build with a warning. A run on a session you hold (`run_test` with
+  `session_id`) uses that session's app, Metro included.
+
+From a shell:
+
+```bash
+vibeview create-test "Sign in" --app <app_id> \
+  --steps '["Tap Sign in", "Type {{email}} into Email", "Verify the home screen shows"]' --output json
+vibeview run-test <test-id> --output json            # new device, waits for the result
+vibeview run-test <test-id> --build <id> --mode replay
+vibeview list-suites                                 # groups (the CLI calls them suites)
+vibeview run-suite <suite-id> --output json
+```
+
+`create-test` reuses an identical test and refuses a different one with the
+same name; pass `--if-exists update` (or `new`, `fail`) to choose, and
+`--group <id>` to add it to a group. `run-test` and `run-suite` always start
+their own device and stop it afterwards; exit code 0 = passed, 1 = a test
+failed, 2 = the run couldn't run. `--mode` is `hybrid` (Smart, the default),
+`ai` (AI only) or `replay` (No AI: no AI and no usage credit; a step with no
+saved path is reported as not checked). `--platform android` runs an iOS
+test's app on Android (same form factor), and `--retry` retries a failure
+once.
+
+Over MCP: `create_test`, then `run_test` (or `run_group`), then `get_run`.
+`get_run` answers at once, and a run takes minutes. While it says the run
+is still in progress, space the calls out (for example, about 30 seconds
+apart) rather than calling it back to back. With a shell, prefer
+`vibeview run-test`, which waits for the result itself. `run_test` with
+`session_id` runs on a session you hold, the device you are driving; without it, it starts and stops its own device. See
+section 8.
+
+## 6. Cleanup
 
 **Always** stop the session when done verifying — a running session bills
 streaming minutes even when idle:
@@ -287,7 +442,7 @@ sandbox, or a collaboration link) is stopped by id:
 vibeview stop <session-id>
 ```
 
-## 6. Command reference
+## 7. Command reference
 
 Every verb accepts `--session <id>` to target a specific session (falls
 back to the current project's `vibeview dev --detach` session if omitted)
@@ -328,6 +483,12 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 |---------|---------|
 | `dev --detach --json` | Start a device + Metro-tunnel session in the background, emitting `session_ready`/`warning`/`error` JSON events on stdout. Add `--model "<name>"` to pick an exact device model. |
 | `dev --build <id>` | Run that uploaded build instead of the app's newest debug build (combine with `--app`, `--platform`, `--model`, `--detach --json`). Only a debug build (kind `debug` in `list-builds`) is accepted, including a debug build with its JS bundle embedded; a release build is refused (run it with `--standalone`). Not on Roku. |
+| `dev --build` | With no id: run the `development` profile's build command on this machine, upload the result, then start the session. Needs the local toolchain (Xcode for iOS); use `build --cloud` otherwise. |
+| `dev --standalone` | Run a build as it is, with no Metro and no tunnel: a release or preview build, or any non-React Native app. With `--build <id>` that build; without, the app's newest release build. Not on Roku. |
+| `build --cloud` | Build a `vibeview.json` profile on a cloud builder and add the result to the app's builds: `--platform <p>\|all`, `--profile <name>`, `--json` (NDJSON; `build_finished` carries `app_build_id`), `--no-wait`, `--download`, `--xcode`, `--node`. Without `--cloud`, `build` runs the command locally and uploads. |
+| `builds list` / `builds logs <id>` | Recent cloud builds and their status; a build's log (`--follow` streams until it ends and exits 1 if it failed). Also `builds download <id>` and `builds cancel <id>`. |
+| `upload-app <file>` | Upload a zipped simulator `.app`, an `.apk` or a Roku channel `.zip`; prints the `app_id`. `--note` labels the build, `--output json` for structured output. |
+| `list-apps` | List the organization's apps: id, name, platform, bundle id / package. |
 | `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
@@ -335,8 +496,15 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `vibeview stop <session-id>` | End any session by id — one created through the API, the sandbox, or a collaboration link. |
 | `dev-reload` | Roku only: re-package, upload and restart the channel in the detached session (the `r` key of the foreground loop). |
 | `vibeview feedback <bug\|friction\|idea> "<summary>"` | Send the VibeView team a report about VibeView itself (not your app), only after the user OKs it: `--details`, `--session` (defaults to the detached session, if any), `--quote` (the user's own words). Works with no session. |
+| `create-test` / `run-test` / `list-suites` / `run-suite` | Tests from a shell (section 5). |
+| `whoami` | Show the signed-in account and organization. |
 
-## 7. If you're calling VibeView over MCP
+The CLI also has store-submission commands (`submit`, `submissions`,
+`testflight`) for shipping a signed production build. Leave those to the
+developer unless they ask; run `vibeview submit --help` for the current
+options.
+
+## 8. If you're calling VibeView over MCP
 
 Everything above is also exposed as MCP tools by `vibeview mcp`, so an agent
 with no shell can run the whole loop. Tool names are the CLI verbs with
@@ -351,15 +519,15 @@ steps the CLI does with plain shell commands:
 
 | MCP tool | Args | Purpose |
 |----------|------|---------|
-| `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so step 1 of the loop needs no shell. Returns the `app_id` to pass to `dev_start`. |
+| `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so getting the app onto a device needs no shell. Returns the `app_id` to pass to `dev_start`. |
 | `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
-| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release, CI or cloud build (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 5 of the loop — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. It chooses the build the way `vibeview dev` does (a debug build of the project's own version over a newer one of another version) and says when it can't read the project's version. A red error screen right after start ("React Native version mismatch", or "undefined is not a function" in a native module) may mean the build was made from other native code: try one of the listed other builds with `build_id`. While every device is busy it waits in the queue, sending progress. |
+| `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release or preview build, or a non-React Native app (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 4 of section 2 — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. It chooses the build the way `vibeview dev` does (a debug build of the project's own version over a newer one of another version) and says when it can't read the project's version. A red error screen right after start ("React Native version mismatch", or "undefined is not a function" in a native module) may mean the build was made from other native code: try one of the listed other builds with `build_id`. While every device is busy it waits in the queue, sending progress. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
 | `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. Says so when the session had already ended. |
-| `create_test` | `app`, `name`, `steps` (required), `group` | Create a test from plain-language steps, one per line (a check is a step starting with "Verify"). Returns the test id for `run_test`. |
-| `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only), `ai_only`. Returns a run id for `get_run`. |
+| `create_test` | `app`, `name`, `steps` (required), `group`, `if_exists` | Create a test from plain-language steps, one per line (a check is a step starting with "Verify"). Returns the test id for `run_test`. An identical existing test is reused and a different one with the same name refused, unless `if_exists` is `update`, `new` or `fail`. |
+| `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only, no usage credit), `ai_only`; AI runs are beta. Returns a run id for `get_run`. |
 | `run_group` | `group` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run every test of a group in order, on `session_id` or, without it, on a new device VibeView starts (never your `dev_start` session). Returns a run id for `get_run`. |
 | `get_run` | `run_id` (required) | A run's status and, when a test failed, which step and why. |
 | `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
