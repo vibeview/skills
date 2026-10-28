@@ -13,21 +13,21 @@ Skills and an MCP server that let a coding agent verify its work on a **live clo
 
 ## What your agent can do
 
-- **Start and stop sessions** on iOS, Android, Apple TV, Android TV and Roku, with your app installed and launched.
-- **Read the screen as a UI tree** with short refs (`@e7`), then tap, type or swipe by ref. On TVs, press remote buttons.
-- **Check the result**: screenshots, app logs, and the tree again after each action.
-- **Hand off to you** when a step needs a person, such as a login or a payment, through a link to the live session.
+- **Check its own change in your React Native app.** It starts `vibeview dev` against your local Metro, so every edit hot-reloads on the cloud device, then it looks at the screen and the logs to see whether the change works.
+- **Build the app in the cloud and run that build.** With a shell, it runs `vibeview build --cloud` (no Mac needed for iOS), then starts a device on the finished build.
+- **Drive the app like a person.** It reads the screen as a UI tree with short refs (`@e7`), taps, types and swipes by ref, presses TV remote buttons, opens deep links, and takes screenshots.
+- **Write and run tests.** It saves plain-language steps as a test, then runs one test or a whole group and reads which step failed and why. AI steps are in beta.
+- **Hand off to you** when a step needs a person, such as a login or a payment, with a link to the live session.
 
-You can watch every session live in the dashboard while the agent works.
+It works on iPhone, iPad, Android phones and tablets, Apple TV, Android TV and Roku. You can watch every session live in the dashboard while the agent works.
 
 <table>
   <tr>
-    <td><img src="assets/device-ios.png" alt="An iPhone simulator session in the VibeView dashboard"></td>
-    <td><img src="assets/device-android.png" alt="An Android emulator session in the VibeView dashboard"></td>
+    <td width="36%"><img src="assets/iphone-duo-closed.png" alt="A travel app on the iPhone Duo simulator, folded"></td>
+    <td><img src="assets/iphone-duo-open.png" alt="The same app on the iPhone Duo simulator, unfolded, showing the Kyoto detail screen next to the home feed"></td>
   </tr>
   <tr>
-    <td><img src="assets/device-appletv.png" alt="An Apple TV session in the VibeView dashboard"></td>
-    <td><img src="assets/device-roku.png" alt="A Roku session in the VibeView dashboard"></td>
+    <td colspan="2"><img src="assets/device-appletv.png" alt="An Apple TV session in the VibeView dashboard" width="49%"> <img src="assets/device-roku.png" alt="A Roku session in the VibeView dashboard" width="49%"></td>
   </tr>
 </table>
 
