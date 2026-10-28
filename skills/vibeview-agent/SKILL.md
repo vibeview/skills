@@ -84,8 +84,11 @@ every configured platform.
   with `code: "config_required"` whose message names the key to add (e.g.
   `platforms.ios.build.profiles.preview {command, artifact}`): add it to
   `vibeview.json` and rerun. A project with no app yet gets one created from
-  the build, and its `appId` is written to `vibeview.json`. Show the
-  developer any `vibeview.json` change you make.
+  the build, and its `appId` is written to `vibeview.json`. Never link a
+  project to a sample app (`is_sample: true` in `list-apps --output json`):
+  every account starts with Atlas, TV Catalog and JetStream, and none of
+  them is the developer's app. Show the developer any `vibeview.json` change
+  you make.
 - **Expo**: a managed project (no `ios/` or `android/` folder) builds with
   `npx expo prebuild --platform <p>` followed by `xcodebuild` or Gradle in the
   same command. Never use `npx expo run:ios` / `run:android` as a cloud build
@@ -151,7 +154,12 @@ verifying a change.
    Once `vibeview.json` exists (this run or an earlier one), a bare
    `vibeview dev --detach --json` reruns the same platform/app. A
    `{"event":"error","code":"config_required",...}` line names exactly what's
-   still missing (usually `--platform` or `--app`) — pass it and retry. Add
+   still missing (usually `--platform` or `--app`) — pass it and retry. In an
+   account whose only apps are samples, a bare `vibeview dev --json` with a
+   build command in `vibeview.json` builds and uploads the app itself (this
+   can take minutes; under `--detach` it logs to `.vibeview/dev-detach.log`),
+   and without one it ends with `code: "no_apps"`: build or upload the app
+   first. Add
    `--model "<name>"` for an exact device model (`vibeview list-devices
    --models`) or `--device-category tablet` for a tablet.
 3. Parse the `session_ready` line from stdout:
@@ -488,7 +496,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `build --cloud` | Build a `vibeview.json` profile on a cloud builder and add the result to the app's builds: `--platform <p>\|all`, `--profile <name>`, `--json` (NDJSON; `build_finished` carries `app_build_id`), `--no-wait`, `--download`, `--xcode`, `--node`. Without `--cloud`, `build` runs the command locally and uploads. |
 | `builds list` / `builds logs <id>` | Recent cloud builds and their status; a build's log (`--follow` streams until it ends and exits 1 if it failed). Also `builds download <id>` and `builds cancel <id>`. |
 | `upload-app <file>` | Upload a zipped simulator `.app`, an `.apk` or a Roku channel `.zip`; prints the `app_id`. `--note` labels the build, `--output json` for structured output. |
-| `list-apps` | List the organization's apps: id, name, platform, bundle id / package. |
+| `list-apps` | List the organization's apps: id, name, platform, bundle id / package; sample apps are marked (`is_sample` in `--output json`). |
 | `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
@@ -520,7 +528,7 @@ steps the CLI does with plain shell commands:
 | MCP tool | Args | Purpose |
 |----------|------|---------|
 | `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so getting the app onto a device needs no shell. Returns the `app_id` to pass to `dev_start`. |
-| `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
+| `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id, `is_sample`). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
 | `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release or preview build, or a non-React Native app (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 4 of section 2 — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. It chooses the build the way `vibeview dev` does (a debug build of the project's own version over a newer one of another version) and says when it can't read the project's version. A red error screen right after start ("React Native version mismatch", or "undefined is not a function" in a native module) may mean the build was made from other native code: try one of the listed other builds with `build_id`. While every device is busy it waits in the queue, sending progress. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
 | `list_builds` | `app` (required) | List an app's uploaded builds with their kind (`debug`/`release`/`unknown`). The MCP equivalent of `vibeview list-builds`. |
