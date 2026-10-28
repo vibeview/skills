@@ -21,15 +21,14 @@ Skills and an MCP server that let a coding agent verify its work on a **live clo
 
 It works on iPhone, iPad, Android phones and tablets, Apple TV, Android TV and Roku. You can watch every session live in the dashboard while the agent works.
 
-<table>
-  <tr>
-    <td width="36%"><img src="assets/iphone-duo-closed.png" alt="A travel app on the iPhone Duo simulator, folded"></td>
-    <td><img src="assets/iphone-duo-open.png" alt="The same app on the iPhone Duo simulator, unfolded, showing the Kyoto detail screen next to the home feed"></td>
-  </tr>
-  <tr>
-    <td colspan="2"><img src="assets/device-appletv.png" alt="An Apple TV session in the VibeView dashboard" width="49%"> <img src="assets/device-roku.png" alt="A Roku session in the VibeView dashboard" width="49%"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/device-iphone-duo.png" alt="An iPhone Duo session in the VibeView dashboard, half folded, with the UI tree panel listing elements by ref (@e0, @e1, …)" width="800">
+</p>
+
+<p align="center">
+  <img src="assets/device-appletv.png" alt="An Apple TV session in the VibeView dashboard" width="49%">
+  <img src="assets/device-roku.png" alt="A Roku session in the VibeView dashboard" width="49%">
+</p>
 
 ## Install
 
