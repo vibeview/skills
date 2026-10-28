@@ -14,7 +14,7 @@ Skills and an MCP server that let a coding agent verify its work on a **live clo
 ## What your agent can do
 
 - **Check its own change in your React Native app.** It starts `vibeview dev` against your local Metro, so every edit hot-reloads on the cloud device, then it looks at the screen and the logs to see whether the change works.
-- **Build the app in the cloud and run that build.** With a shell, it runs `vibeview build --cloud` (no Mac needed for iOS), then starts a device on the finished build.
+- **Build the app in the cloud and run that build.** React Native, Expo, Flutter, Capacitor, Kotlin Multiplatform or native iOS and Android: with a shell, it runs `vibeview build --cloud` (no Mac needed for iOS), then starts a device on the finished build.
 - **Drive the app like a person.** It reads the screen as a UI tree with short refs (`@e7`), taps, types and swipes by ref, presses TV remote buttons, opens deep links, and takes screenshots.
 - **Write and run tests.** It saves plain-language steps as a test, then runs one test or a whole group and reads which step failed and why. AI steps are in beta.
 - **Hand off to you** when a step needs a person, such as a login or a payment, with a link to the live session.
