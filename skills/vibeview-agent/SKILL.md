@@ -78,8 +78,8 @@ every configured platform.
   Other names work too.
 - **Run it from the project root.** The command runs in a clean
   environment, so it must install dependencies itself (`npm ci`,
-  `yarn install --immutable`, `pnpm install --frozen-lockfile`, plus
-  `pod install` for a bare iOS build). Cloud builders have no Bun.
+  `yarn install --immutable`, `pnpm install --frozen-lockfile` or
+  `bun install`, plus `pod install` for a bare iOS build).
 - **Under `--json` nothing prompts.** A missing profile is an `error` event
   with `code: "config_required"` whose message names the key to add (e.g.
   `platforms.ios.build.profiles.preview {command, artifact}`): add it to
