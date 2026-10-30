@@ -101,7 +101,12 @@ every configured platform.
 
 **Waiting and reading the result.** With `--json`, stdout is NDJSON. You
 get `build_created` (the cloud build `id`), `status` (`queued`, then
-`running`), `build_log` and `warning` events. Each build ends with one
+`running`), `build_log` and `warning` events. While a build is queued, the
+`queued` status event carries `queue` (`reason`: `builders_busy`,
+`org_limit`, `builders_offline` or `starting`; `position` in line, 1 when
+none is ahead; `limit`, the plan's builds at once), and a `queue` event
+(`id`, `queue`) follows whenever that changes. `vibeview builds logs <id>
+--follow --json` emits the same `status` and `queue` events. Each build ends with one
 `build_finished` event. It carries `status`, `error_summary`,
 `app_public_id`, `app_build_id` (the uploaded build it produced) and
 `launch_warning`. A non-null `launch_warning` means the build won't launch
