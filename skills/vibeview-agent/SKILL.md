@@ -29,8 +29,11 @@ Build rules — a build that breaks these installs and then crashes or is
 refused:
 
 - **iOS and Apple TV**: a **simulator** build (`-sdk iphonesimulator` or
-  `-sdk appletvsimulator`, `CODE_SIGNING_ALLOWED=NO`) with the `arm64` slice,
-  never a device `.ipa` or archive.
+  `-sdk appletvsimulator`, `CODE_SIGN_IDENTITY=-`) with the `arm64` slice,
+  never a device `.ipa` or archive. `CODE_SIGN_IDENTITY=-` signs it to run
+  locally (no certificate needed); an unsigned build
+  (`CODE_SIGNING_ALLOWED=NO`) can't use the Keychain, so `expo-secure-store`
+  fails.
 - **Android and Android TV**: an `.apk` (an `.aab` can't be installed) that
   keeps the `x86_64` slice (and `x86` for Android TV) if the app has native
   code. Standard `./gradlew assembleDebug` output has it.
@@ -78,8 +81,11 @@ every configured platform.
   Other names work too.
 - **Run it from the project root.** The command runs in a clean
   environment, so it must install dependencies itself (`npm ci`,
-  `yarn install --immutable`, `pnpm install --frozen-lockfile` or
-  `bun install`, plus `pod install` for a bare iOS build).
+  `yarn install --immutable` for Yarn 2+, `yarn install --frozen-lockfile`
+  for Yarn 1 with `"packageManager": "yarn@1.x"` in package.json (without
+  it, `npx --yes yarn@1 install --frozen-lockfile`: the builders' default
+  Yarn is 2+), `pnpm install --frozen-lockfile` or `bun install`, plus
+  `pod install` for a bare iOS build).
 - **Under `--json` nothing prompts.** A missing profile is an `error` event
   with `code: "config_required"` whose message names the key to add (e.g.
   `platforms.ios.build.profiles.preview {command, artifact}`): add it to
