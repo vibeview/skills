@@ -508,7 +508,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `builds list` / `builds logs <id>` | Recent cloud builds and their status; a build's log (`--follow` streams until it ends and exits 1 if it failed). Also `builds download <id>` and `builds cancel <id>`. |
 | `upload-app <file>` | Upload a zipped simulator `.app`, an `.apk` or a Roku channel `.zip`; prints the `app_id`. `--note` labels the build, `--output json` for structured output. |
 | `list-apps` | List the organization's apps: id, name, platform, bundle id / package; sample apps are marked (`is_sample` in `--output json`). |
-| `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, note. `--json` prints an array. |
+| `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, expiry (the **Expires on** date, `expired`, or `—` when it has no **Expires on** date yet: not due, **Keep** on, or the app's newest build), note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
 | `dev-status` | Check on the current project's detached dev session. |
 | `dev-stop` | End the current project's detached dev session. |
