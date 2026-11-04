@@ -92,9 +92,9 @@ every configured platform.
   `vibeview.json` and rerun. A project with no app yet gets one created from
   the build, and its `appId` is written to `vibeview.json`. Never link a
   project to a sample app (`is_sample: true` in `list-apps --output json`):
-  every account starts with Atlas, TV Catalog and JetStream, and none of
-  them is the developer's app. Show the developer any `vibeview.json` change
-  you make.
+  every account starts with sample apps (Atlas; older accounts also TV
+  Catalog and JetStream), and none of them is the developer's app. Show
+  the developer any `vibeview.json` change you make.
 - **Expo**: a managed project (no `ios/` or `android/` folder) builds with
   `npx expo prebuild --platform <p>` followed by `xcodebuild` or Gradle in the
   same command. Never use `npx expo run:ios` / `run:android` as a cloud build
