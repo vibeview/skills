@@ -400,7 +400,7 @@ A test is a list of plain-language steps; a step starting with "Verify" is a
 check. Write one when the developer asks for a repeatable check, not to
 verify a one-off change (driving the session does that).
 
-- **AI runs are beta and use usage credit.** The first run of a new test is
+- **AI runs use usage credit.** The first run of a new test is
   driven by the AI agent; once it passes, later runs replay the saved path
   and use AI only where the screen changed. Ask before starting AI runs.
 - **Never put real credentials in steps.** Use `{{key}}` placeholders whose
@@ -546,7 +546,7 @@ steps the CLI does with plain shell commands:
 | `dev_stop` | — | Stop the session `dev_start` started. The MCP equivalent of `vibeview dev-stop`. Says "no dev session was running" when there was none. |
 | `stop_session` | `session_id` (required) | Stop any session by id. The MCP equivalent of `vibeview stop <session-id>`. Says so when the session had already ended. |
 | `create_test` | `app`, `name`, `steps` (required), `group`, `if_exists` | Create a test from plain-language steps, one per line (a check is a step starting with "Verify"). Returns the test id for `run_test`. An identical existing test is reused and a different one with the same name refused, unless `if_exists` is `update`, `new` or `fail`. |
-| `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only, no usage credit), `ai_only`; AI runs are beta. Returns a run id for `get_run`. |
+| `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only, no usage credit), `ai_only`. Returns a run id for `get_run`. |
 | `run_group` | `group` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run every test of a group in order, on `session_id` or, without it, on a new device VibeView starts (never your `dev_start` session). Returns a run id for `get_run`. |
 | `get_run` | `run_id` (required) | A run's status and, when a test failed, which step and why. |
 | `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
