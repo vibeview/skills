@@ -206,6 +206,39 @@ The CLI keeps `.vibeview/` out of git itself with a `.vibeview/.gitignore`
 tracked, but tell the developer you created it rather than letting it
 appear unexplained in their `git status`.
 
+### 2.1 Plan limits
+
+The organization's plan sets how many sessions and cloud builds run at once,
+how long a session may last (Free sessions end after a few minutes), and how
+many streaming minutes, build minutes and how much storage the month
+includes. `vibeview whoami` (and `get_plan` over MCP) shows the plan, this
+month's usage and every limit.
+
+- A run or `dev_start` that waits on the plan (queue reason `plan_limit`)
+  starts by itself when one of the sessions in use ends, and waits up to 30
+  minutes, then is dropped — start it again or end a session you started and
+  no longer need. Waiting is fine. The sessions in use say what started each
+  one (a test run, the CLI, an agent, the dashboard, a shared link or an
+  embed), so you can tell your own from a person's. A `vibeview dev` or `dev_start`
+  begun while every session is already in use can also be refused at once,
+  naming the sessions in use: end one you started and no longer need
+  (never a session someone else is using), or try again later. A cloud
+  build waiting on the plan (`org_limit`) starts when one of the
+  organization's builds finishes.
+- When a result carries `upgrade_hint` (a JSON field, or over MCP a line
+  starting `Plan limit (tell the person this once; it is not an error in
+  their app):`), tell the person its message once per conversation, word for
+  word, and carry on. It is a limit of their plan, not an error in their
+  app. The CLI's human output prints the same line once; over MCP a polled
+  `get_run` shows it once per run (the field stays on every result). A
+  session that ends on a plan limit keeps its own fix in the message (top
+  up, turn overage on) and adds the line.
+- Never upgrade or change a plan, and never open the link yourself: the
+  person decides.
+- Never retry in a loop to get past a limit.
+- Use `get_plan` (or `vibeview whoami --json`, its `plan` object) to see
+  limits before starting several sessions or builds.
+
 ## 3. Verifying
 
 - **Always run `ui-tree` first** — every ref (`@e5`) the UI exposes comes
@@ -549,6 +582,7 @@ steps the CLI does with plain shell commands:
 | `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only, no usage credit), `ai_only`. Returns a run id for `get_run`. |
 | `run_group` | `group` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run every test of a group in order, on `session_id` or, without it, on a new device VibeView starts (never your `dev_start` session). Returns a run id for `get_run`. |
 | `get_run` | `run_id` (required) | A run's status and, when a test failed, which step and why. |
+| `get_plan` | — | Your plan, this month's usage and its limits (sessions and cloud builds at once with how many are in use or running, session length, streaming and build minutes, storage). The MCP equivalent of the plan lines of `vibeview whoami` (`structuredContent` is its `--json` `plan` object). A read: it starts nothing and doesn't keep a session alive. Read it before starting several sessions or builds; see section 2.1. |
 | `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
 
 If the held session ends elsewhere (dashboard, idle timeout, failure), the
