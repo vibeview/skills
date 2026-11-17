@@ -208,7 +208,7 @@ appear unexplained in their `git status`.
 
 ### 2.1 Plan limits
 
-The organization's plan sets how many sessions and cloud builds run at once,
+The organization's plan sets how many devices and cloud builds run at once,
 how long a session may last (Free sessions end after a few minutes), and how
 many streaming minutes, build minutes and how much storage the month
 includes. `vibeview whoami` (and `get_plan` over MCP) shows the plan, this
@@ -220,7 +220,7 @@ month's usage and every limit.
   no longer need. Waiting is fine. The sessions in use say what started each
   one (a test run, the CLI, an agent, the dashboard, a shared link or an
   embed), so you can tell your own from a person's. A `vibeview dev` or `dev_start`
-  begun while every session is already in use can also be refused at once,
+  begun while every device the plan runs at once is in use can also be refused,
   naming the sessions in use: end one you started and no longer need
   (never a session someone else is using), or try again later. A cloud
   build waiting on the plan (`org_limit`) starts when one of the
@@ -582,7 +582,7 @@ steps the CLI does with plain shell commands:
 | `run_test` | `test` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run a saved test. With `session_id` it runs on a session you hold; without it, VibeView always starts a new device, runs the test and stops it (it never uses your `dev_start` session). `ai_use`: `smart` (default), `no_ai` (replay only, no usage credit), `ai_only`. Returns a run id for `get_run`. |
 | `run_group` | `group` (required), `session_id`, `device_model`, `ai_use`, `start_from_current_screen` | Run every test of a group in order, on `session_id` or, without it, on a new device VibeView starts (never your `dev_start` session). Returns a run id for `get_run`. |
 | `get_run` | `run_id` (required) | A run's status and, when a test failed, which step and why. |
-| `get_plan` | — | Your plan, this month's usage and its limits (sessions and cloud builds at once with how many are in use or running, session length, streaming and build minutes, storage). The MCP equivalent of the plan lines of `vibeview whoami` (`structuredContent` is its `--json` `plan` object). A read: it starts nothing and doesn't keep a session alive. Read it before starting several sessions or builds; see section 2.1. |
+| `get_plan` | — | Your plan, this month's usage and its limits (devices and cloud builds at once with how many are in use or running, session length, streaming and build minutes, storage). The MCP equivalent of the plan lines of `vibeview whoami` (`structuredContent` is its `--json` `plan` object). A read: it starts nothing and doesn't keep a session alive. Read it before starting several sessions or builds; see section 2.1. |
 | `dev_reload` | — | Roku only: re-package, upload and restart the channel in the held session (or this project's `vibeview dev --detach` session). The MCP equivalent of `vibeview dev-reload`. |
 
 If the held session ends elsewhere (dashboard, idle timeout, failure), the
