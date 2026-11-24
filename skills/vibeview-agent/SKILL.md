@@ -1,6 +1,6 @@
 ---
 name: vibeview-agent
-description: Build, run, drive and test a mobile or TV app on live cloud devices with VibeView - iOS, Android, Apple TV, Android TV and Roku. Use when asked to verify a change on a device, run the app on a simulator or emulator, build it in the cloud (including iOS without a Mac), check a React Native, Expo, Flutter or native app or a Roku channel, or create and run tests for it.
+description: Build, run, drive and test a mobile or TV app on live cloud devices with VibeView - iOS, Android, Apple TV, Android TV and Roku, and build and test Samsung TV and LG TV apps. Use when asked to verify a change on a device, run the app on a simulator or emulator, build it in the cloud (including iOS without a Mac), check a React Native, Expo, Flutter or native app, a Roku channel or a Samsung or LG TV app, or create and run tests for it.
 ---
 
 # VibeView agent control
@@ -9,9 +9,11 @@ VibeView runs your app on cloud iOS, Android, Apple TV, Android TV and Roku
 devices (simulators and emulators). From the `vibeview` CLI, or its MCP server,
 you can build the app in the cloud, start a session, drive the UI, read logs,
 and run saved tests, so you can check that a change actually works, not just
-that it compiles. Requires the `vibeview` CLI installed and signed in
-(`vibeview login`, or `VIBEVIEW_API_TOKEN` set); `vibeview whoami` tells you
-which account and organization you are using.
+that it compiles. Samsung TV and LG TV apps can be built, uploaded and tested
+too, and a session the developer starts on one can be driven, but you can't
+start one yourself (section 1). Requires the `vibeview` CLI installed and
+signed in (`vibeview login`, or `VIBEVIEW_API_TOKEN` set); `vibeview whoami`
+tells you which account and organization you are using.
 
 ## 1. Get the app onto a device
 
@@ -20,9 +22,10 @@ Pick the first row that fits, then start a session (section 2).
 | Situation | Do this |
 |-----------|---------|
 | The newest build on VibeView already contains your change, or it is a React Native/Expo debug build and you changed only JS or assets | Nothing to build. A debug build loads your JS from local Metro and hot-reloads it. Find the app with `vibeview list-apps` (MCP: `list_apps`) and its builds with `vibeview list-builds <app>` (MCP: `list_builds`). |
-| You have a build file that contains your change (simulator `.app` zipped, `.apk`, Roku channel `.zip`) | `vibeview upload-app <file>` (MCP: `upload_app`). |
+| You have a build file that contains your change (simulator `.app` zipped, `.apk`, Roku channel `.zip`, Samsung TV `.wgt`, LG TV `.ipk`) | `vibeview upload-app <file>` (MCP: `upload_app`). |
 | A native change in a React Native/Expo app, or any code change in a Flutter, Capacitor, Kotlin Multiplatform or native app, and this machine can build it (Xcode for iOS/Apple TV) | `vibeview dev --build`. It runs the `development` profile's command from `vibeview.json` here, uploads the result, then starts the session. `vibeview build` builds and uploads without a session. |
 | The same kind of change, but no Mac or no toolchain here | Cloud build: `vibeview build --cloud` (section 1.1). This is the iOS path from Linux or Windows. |
+| Samsung TV or LG TV app | No live dev: `vibeview dev` and `dev_start` refuse these TVs, and neither the CLI nor MCP has another way to start a session on one. Cloud-build the app folder (`vibeview build --cloud --platform tizen` for Samsung, `--platform webos` for LG; section 1.1), or upload a finished `.wgt` / `.ipk` with `vibeview upload-app` (MCP: `upload_app`). Then run the app's saved tests on a TV with `vibeview run-test` / `run-suite` (section 5; MCP: `run_test` without `session_id`). To drive one live, ask the developer to start a session on the TV from the dashboard's **Devices** page (it needs the app picked; **Run this build** opens it with the build) and give you its session id (the end of the page URL, `/sandbox/<session_id>`); pass it as `--session <id>` to the verbs in section 3 (MCP: `session_id`). A TV that can't be automated yet refuses them with `This TV can't run tests yet`. Builds, sessions, test runs and driving these TVs need the Team plan or higher. |
 | Roku channel | Not cloud-built. Required: a `platforms.roku.build.profiles.development` entry in `vibeview.json` (`command` packages the zip, `artifact` is its path). Without it `vibeview dev --platform roku` refuses to start. With it, `vibeview dev --platform roku --build --detach --json` packages and uploads the channel itself, and `dev-reload` reinstalls it after an edit (section 3). |
 
 Build rules — a build that breaks these installs and then crashes or is
@@ -79,6 +82,17 @@ every configured platform.
   the same build in Release with the JS inside, so it runs standalone.
   `production` is a signed store build that VibeView devices can't run.
   Other names work too.
+- **Samsung TV and LG TV** (`tizen`, `webos`; CLI 0.79.0 or later): the
+  `artifact` is the app folder (`config.xml` or `appinfo.json` at its top),
+  which the cloud packages into a `.wgt` or `.ipk` (hidden files,
+  `node_modules` and a top-level `vibeview.json` are left out; no symbolic
+  links), or a finished `.wgt` / `.ipk`. LG TV has production builds (the
+  `.ipk`, no signing credential). Samsung TV production builds (CLI 0.80.0 or
+  later) are signed with the person's own Samsung certificates: they add them
+  once, from a terminal, with `vibeview credentials add --platform tizen
+  --author <author.p12> --distributor <distributor.p12> --name <name>` (both
+  passwords are hidden prompts, so an agent can't run it for them), or on the
+  dashboard's Signing tab. `autoIncrement` is refused for both.
 - **Run it from the project root.** The command runs in a clean
   environment, so it must install dependencies itself (`npm ci`,
   `yarn install --immutable` for Yarn 2+, `yarn install --frozen-lockfile`
@@ -539,7 +553,7 @@ Dev-loop lifecycle commands (not registry verbs, but needed for every run):
 | `dev --standalone` | Run a build as it is, with no Metro and no tunnel: a release or preview build, or any non-React Native app. With `--build <id>` that build; without, the app's newest release build. Not on Roku. |
 | `build --cloud` | Build a `vibeview.json` profile on a cloud builder and add the result to the app's builds: `--platform <p>\|all`, `--profile <name>`, `--json` (NDJSON; `build_finished` carries `app_build_id`), `--no-wait`, `--download`, `--xcode`, `--node`. Without `--cloud`, `build` runs the command locally and uploads. |
 | `builds list` / `builds logs <id>` | Recent cloud builds and their status; a build's log (`--follow` streams until it ends and exits 1 if it failed). Also `builds download <id>` and `builds cancel <id>`. |
-| `upload-app <file>` | Upload a zipped simulator `.app`, an `.apk` or a Roku channel `.zip`; prints the `app_id`. `--note` labels the build, `--output json` for structured output. |
+| `upload-app <file>` | Upload a zipped simulator `.app`, an `.apk`, a Roku channel `.zip`, a Samsung TV `.wgt` or an LG TV `.ipk`; prints the `app_id`. `--note` labels the build, `--output json` for structured output. |
 | `list-apps` | List the organization's apps: id, name, platform, bundle id / package; sample apps are marked (`is_sample` in `--output json`). |
 | `list-builds <app>` | List an app's uploaded builds, newest first: id, version (build number), platform, kind (`debug`/`release`/`unknown`), upload time, expiry (the **Expires on** date, `expired`, or `—` when it has no **Expires on** date yet: not due, **Keep** on, or the app's newest build), note. `--json` prints an array. |
 | `list-devices --models` | List the device models you can start (the names `--model` takes); foldables are marked `foldable`. |
@@ -571,7 +585,7 @@ steps the CLI does with plain shell commands:
 
 | MCP tool | Args | Purpose |
 |----------|------|---------|
-| `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`). The MCP equivalent of `vibeview upload-app`, so getting the app onto a device needs no shell. Returns the `app_id` to pass to `dev_start`. |
+| `upload_app` | `file` (required path), `name` | Upload a build (zipped iOS/tvOS simulator `.app`, Android/Android TV `.apk`, Roku channel `.zip`, Samsung TV `.wgt`, LG TV `.ipk`). The MCP equivalent of `vibeview upload-app`, so getting the app onto a device needs no shell. Returns the `app_id` to pass to `dev_start`. |
 | `list_apps` | `platform` | List the org's apps (app id, name, platform, bundle id, `is_sample`). The MCP equivalent of `vibeview list-apps` — use it to find an app someone else uploaded. |
 | `dev_start` | `platform` (required: `ios`/`android`/`tvos`/`androidtv`/`roku`), `app`, `metro_port`, `model`, `build_id`, `standalone` | Start a session held open by the MCP server. The MCP equivalent of `vibeview dev --detach`; `model` picks an exact device model (e.g. `"iPhone Duo"`); `build_id` runs that build instead of the newest debug one (see `list_builds`). `standalone: true` runs any build as it is with no Metro — a release or preview build, or a non-React Native app (without `build_id`: the newest release build). An app for another platform is refused before a device is taken. Returns `page_url` — relay it to the developer immediately, same as step 4 of section 2 — the device it got (model, OS, category; posture and lit screen on a foldable), and the build it installed (id, version, upload time) with the app's other debug builds. It chooses the build the way `vibeview dev` does (a debug build of the project's own version over a newer one of another version) and says when it can't read the project's version. A red error screen right after start ("React Native version mismatch", or "undefined is not a function" in a native module) may mean the build was made from other native code: try one of the listed other builds with `build_id`. While every device is busy it waits in the queue, sending progress. |
 | `list_device_models` | `device_type` | List the device models you can start (model, OS, platform, category, `foldable` marker, and how many are free/busy). The MCP equivalent of `vibeview list-devices --models`. |
